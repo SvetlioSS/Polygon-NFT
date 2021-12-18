@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "mint": "npx hardhat mint",
+    "deploy": "npx hardhat deploy-testnets --network matic",
+    "test": "hardhat test --network hardhat"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
     "hardhat": "^2.7.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.0"
+    "@openzeppelin/contracts": "^4.4.0",
+    "nft.storage": "^5.1.3"
   }
 }
