@@ -2,6 +2,7 @@ const hre = require("hardhat");
 const { NFTStorage, File } = require("nft.storage");
 const fs = require("fs");
 const storage = new NFTStorage({ token: process.env.NFT_STORAGE_API_KEY });
+
 const LimeGameItem = require("../artifacts/contracts/LimeGameItem.sol/LimeGameItem.json");
 
 const provider = new hre.ethers.providers.JsonRpcProvider(
@@ -20,7 +21,7 @@ const limeGameItemContract = new hre.ethers.Contract(
 );
 
 const mint = async (name, description, filePath, fileName, type) => {
-  console.log('Minting "%d"', name);
+  console.log('Minting "%s"', name);
 
   const metadata = await storage.store({
     name,
@@ -40,7 +41,7 @@ const mint = async (name, description, filePath, fileName, type) => {
     metadata.url
   );
 
-  console.log('Minting "%d" finished', name);
+  console.log('Minting "%s" finished', name);
 };
 
 module.exports = async () => {
