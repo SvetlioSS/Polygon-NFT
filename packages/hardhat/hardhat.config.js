@@ -1,9 +1,7 @@
 require('dotenv').config({ path: '../../.env' });
-require("@nomiclabs/hardhat-waffle");
+require('@nomiclabs/hardhat-waffle');
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
@@ -11,38 +9,37 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-task("deploy-testnets", "Deploys contract on a provided network")
-  .setAction(async () => {
-    const deploy = require("./scripts/deploy");
+task('deploy-testnets', 'Deploys contract on a provided network').setAction(
+  async () => {
+    const deploy = require('./scripts/deploy');
     await deploy();
-  });
+  }
+);
 
-task("mint", "Mints some NFTs on a provided network")
-  .setAction(async () => {
-    const mint = require("./scripts/mint");
-    await mint();
-  });
+task('mint', 'Mints some NFTs on a provided network').setAction(async () => {
+  const mint = require('./scripts/mint');
+  await mint();
+});
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  defaultNetwork: "matic",
+  defaultNetwork: 'matic',
   networks: {
-    hardhat: {
-    },
+    hardhat: {},
     matic: {
-      url: "https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzpLTwAw3fzd2l5J6i4",
-      accounts: [process.env.NFT_OWNER_PRIVATE_KEY]
-    }
+      url: 'https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzpLTwAw3fzd2l5J6i4',
+      accounts: [process.env.NFT_OWNER_PRIVATE_KEY],
+    },
   },
   solidity: {
-    version: "0.8.0",
+    version: '0.8.0',
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
 };

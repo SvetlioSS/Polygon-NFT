@@ -6,7 +6,8 @@
   "scripts": {
     "mint": "yarn workspace @polygon-nft/hardhat mint",
     "deploy": "yarn workspace @polygon-nft/hardhat deploy",
-    "test": "yarn workspace @polygon-nft/hardhat test"
+    "test": "yarn workspace @polygon-nft/hardhat test",
+    "prettify": "yarn prettier -w ."
   },
   "repository": "git+https://github.com/SvetlioSS/Polygon-NFT.git",
   "author": "Svetoslav Spasov <svetoslav.spasov@svetoslav.s.spasov.com>",
@@ -19,5 +20,11 @@
     "packages": [
       "packages/*"
     ]
+  },
+  "devDependencies": {
+    "prettier": "^2.5.1"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }
