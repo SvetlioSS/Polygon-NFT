@@ -4,9 +4,13 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "mint": "yarn workspace @polygon-nft/hardhat mint",
-    "deploy": "yarn workspace @polygon-nft/hardhat deploy",
-    "test": "yarn workspace @polygon-nft/hardhat test",
+    "hardhat:mint": "yarn workspace @polygon-nft/hardhat mint",
+    "hardhat:deploy": "yarn workspace @polygon-nft/hardhat deploy",
+    "hardhat:test": "yarn workspace @polygon-nft/hardhat test",
+    "react-app:start": "yarn workspace @polygon-nft/react-app react-scripts-ts start",
+    "react-app:build": "yarn workspace @polygon-nft/react-app react-scripts-ts build",
+    "react-app:test": "yarn workspace @polygon-nft/react-app react-scripts-ts test --env=jsdom",
+    "react-app:eject": "yarn workspace @polygon-nft/react-app react-scripts-ts eject",
     "prettify": "yarn prettier -w ."
   },
   "repository": "git+https://github.com/SvetlioSS/Polygon-NFT.git",
