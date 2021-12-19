@@ -69,7 +69,7 @@ const INITIAL_STATE: IAppState = {
   pendingRequest: false,
   result: null,
   electionContract: null,
-  info: null
+  info: null,
 };
 
 class App extends React.Component<any, any> {
@@ -81,13 +81,13 @@ class App extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
     this.state = {
-      ...INITIAL_STATE
+      ...INITIAL_STATE,
     };
 
     this.web3Modal = new Web3Modal({
       network: this.getNetwork(),
       cacheProvider: true,
-      providerOptions: this.getProviderOptions()
+      providerOptions: this.getProviderOptions(),
     });
   }
 
@@ -104,62 +104,63 @@ class App extends React.Component<any, any> {
 
     const network = await library.getNetwork();
 
-    const address = this.provider.selectedAddress ? this.provider.selectedAddress : this.provider?.accounts[0];
+    const address = this.provider.selectedAddress
+      ? this.provider.selectedAddress
+      : this.provider?.accounts[0];
 
     await this.setState({
       library,
       chainId: network.chainId,
       address,
-      connected: true
+      connected: true,
     });
 
     await this.subscribeToProviderEvents(this.provider);
-
   };
 
-  public subscribeToProviderEvents = async (provider:any) => {
+  public subscribeToProviderEvents = async (provider: any) => {
     if (!provider.on) {
       return;
     }
 
-    provider.on("accountsChanged", this.changedAccount);
-    provider.on("networkChanged", this.networkChanged);
-    provider.on("close", this.close);
+    provider.on('accountsChanged', this.changedAccount);
+    provider.on('networkChanged', this.networkChanged);
+    provider.on('close', this.close);
 
     await this.web3Modal.off('accountsChanged');
   };
 
-  public async unSubscribe(provider:any) {
+  public async unSubscribe(provider: any) {
     // Workaround for metamask widget > 9.0.3 (provider.off is undefined);
     window.location.reload(false);
     if (!provider.off) {
       return;
     }
 
-    provider.off("accountsChanged", this.changedAccount);
-    provider.off("networkChanged", this.networkChanged);
-    provider.off("close", this.close);
+    provider.off('accountsChanged', this.changedAccount);
+    provider.off('networkChanged', this.networkChanged);
+    provider.off('close', this.close);
   }
 
   public changedAccount = async (accounts: string[]) => {
-    if(!accounts.length) {
-      // Metamask Lock fire an empty accounts array 
+    if (!accounts.length) {
+      // Metamask Lock fire an empty accounts array
       await this.resetApp();
     } else {
       await this.setState({ address: accounts[0] });
     }
-  }
+  };
 
   public networkChanged = async (networkId: number) => {
     const library = new Web3Provider(this.provider);
     const network = await library.getNetwork();
     const chainId = network.chainId;
     await this.setState({ chainId, library });
-  }
-  
+  };
+
   public close = async () => {
     this.resetApp();
-  }
+  };
 
   public getNetwork = () => getChainData(this.state.chainId).network;
 
@@ -168,30 +169,24 @@ class App extends React.Component<any, any> {
       walletconnect: {
         package: WalletConnectProvider,
         options: {
-          infuraId: process.env.REACT_APP_INFURA_ID
-        }
-      }
+          infuraId: process.env.REACT_APP_INFURA_ID,
+        },
+      },
     };
     return providerOptions;
   };
 
   public resetApp = async () => {
     await this.web3Modal.clearCachedProvider();
-    localStorage.removeItem("WEB3_CONNECT_CACHED_PROVIDER");
-    localStorage.removeItem("walletconnect");
+    localStorage.removeItem('WEB3_CONNECT_CACHED_PROVIDER');
+    localStorage.removeItem('walletconnect');
     await this.unSubscribe(this.provider);
 
     this.setState({ ...INITIAL_STATE });
-
   };
 
   public render = () => {
-    const {
-      address,
-      connected,
-      chainId,
-      fetching
-    } = this.state;
+    const { address, connected, chainId, fetching } = this.state;
     return (
       <SLayout>
         <Column maxWidth={1000} spanHeight>
@@ -209,10 +204,12 @@ class App extends React.Component<any, any> {
                 </SContainer>
               </Column>
             ) : (
-                <SLanding center>
-                  {!this.state.connected && <ConnectButton onClick={this.onConnect} />}
-                </SLanding>
-              )}
+              <SLanding center>
+                {!this.state.connected && (
+                  <ConnectButton onClick={this.onConnect} />
+                )}
+              </SLanding>
+            )}
           </SContent>
         </Column>
       </SLayout>

@@ -1,5 +1,5 @@
-import * as React from 'react'
-import styled from 'styled-components'
+import * as React from 'react';
+import styled from 'styled-components';
 
 const SConnectButtonContainer = styled.div`
   position: relative;
@@ -11,15 +11,15 @@ const SConnectButtonContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-`
+`;
 
 interface IConnectButtonStyleProps {
-  disabled: boolean
-  icon?: any
+  disabled: boolean;
+  icon?: any;
 }
 
 interface IConnectButtonProps extends IConnectButtonStyleProps {
-  onClick?: any
+  onClick?: any;
 }
 
 const SHoverLayer = styled.div`
@@ -35,7 +35,7 @@ const SHoverLayer = styled.div`
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-`
+`;
 
 const SIcon = styled.div`
   position: absolute;
@@ -43,7 +43,7 @@ const SIcon = styled.div`
   width: 28px;
   margin-left: 13.1%;
   top: calc((100% - 28px) / 2);
-`
+`;
 
 const SConnectButton = styled.button<IConnectButtonStyleProps>`
   transition: all 0.15s ease-in-out;
@@ -112,7 +112,7 @@ const SConnectButton = styled.button<IConnectButtonStyleProps>`
     background-color: rgb(255, 255, 255);
     transition: 0.15s ease;
   }
-`
+`;
 
 const ConnectButton = (props: IConnectButtonProps) => (
   <SConnectButtonContainer>
@@ -127,11 +127,11 @@ const ConnectButton = (props: IConnectButtonProps) => (
       {'Connect'}
     </SConnectButton>
   </SConnectButtonContainer>
-)
+);
 
 ConnectButton.defaultProps = {
   disabled: false,
-  icon: null
-}
+  icon: null,
+};
 
-export default ConnectButton
+export default ConnectButton;

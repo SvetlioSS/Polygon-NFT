@@ -1,21 +1,21 @@
-import * as React from 'react'
-import styled from 'styled-components'
-import Loader from './Loader'
-import { colors, fonts, shadows, transitions } from '../styles'
+import * as React from 'react';
+import styled from 'styled-components';
+import Loader from './Loader';
+import { colors, fonts, shadows, transitions } from '../styles';
 
 interface IButtonStyleProps {
-  fetching: boolean
-  outline: boolean
-  type: 'button' | 'submit' | 'reset'
-  color: string
-  disabled: boolean
-  icon: any
-  left: boolean
+  fetching: boolean;
+  outline: boolean;
+  type: 'button' | 'submit' | 'reset';
+  color: string;
+  disabled: boolean;
+  icon: any;
+  left: boolean;
 }
 
 interface IButtonProps extends IButtonStyleProps {
-  children: React.ReactNode
-  onClick?: any
+  children: React.ReactNode;
+  onClick?: any;
 }
 
 const SIcon = styled.div`
@@ -24,7 +24,7 @@ const SIcon = styled.div`
   width: 15px;
   margin: 0 8px;
   top: calc((100% - 15px) / 2);
-`
+`;
 
 const SHoverLayer = styled.div`
   transition: ${transitions.button};
@@ -39,7 +39,7 @@ const SHoverLayer = styled.div`
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-`
+`;
 
 const SButton = styled.button<IButtonStyleProps>`
   transition: ${transitions.button};
@@ -104,17 +104,15 @@ const SButton = styled.button<IButtonStyleProps>`
       outline ? `rgb(${colors[color]})` : `rgb(${colors.white})`};
     transition: 0.15s ease;
   }
-`
+`;
 
 const Button = (props: IButtonProps) => (
-  <SButton
-    {...props}
-  >
+  <SButton {...props}>
     <SHoverLayer />
     <SIcon />
     {props.fetching ? <Loader size={20} color="white" /> : props.children}
   </SButton>
-)
+);
 
 Button.defaultProps = {
   fetching: false,
@@ -123,7 +121,7 @@ Button.defaultProps = {
   color: 'lightBlue',
   disabled: false,
   icon: null,
-  left: false
-}
+  left: false,
+};
 
-export default Button
+export default Button;
