@@ -5,13 +5,19 @@
   "private": true,
   "scripts": {
     "hardhat:mint": "yarn workspace @polygon-nft/hardhat mint",
-    "hardhat:deploy": "yarn workspace @polygon-nft/hardhat deploy",
+    "hardhat:burn": "yarn workspace @polygon-nft/hardhat burn",
+    "hardhat:deposit": "yarn workspace @polygon-nft/hardhat deposit",
+    "hardhat:connect": "yarn workspace @polygon-nft/hardhat connect",
+    "hardhat:deploy:goerli": "yarn workspace @polygon-nft/hardhat deploy:goerli",
+    "hardhat:deploy:mumbai": "yarn workspace @polygon-nft/hardhat deploy:mumbai",
+    "hardhat:verify:goerli": "yarn workspace @polygon-nft/hardhat verify:goerli",
+    "hardhat:verify:mumbai": "yarn workspace @polygon-nft/hardhat verify:mumbai",
     "hardhat:test": "yarn workspace @polygon-nft/hardhat test",
     "react-app:start": "yarn workspace @polygon-nft/react-app react-scripts-ts start",
     "react-app:build": "yarn workspace @polygon-nft/react-app react-scripts-ts build",
     "react-app:test": "yarn workspace @polygon-nft/react-app react-scripts-ts test --env=jsdom",
     "react-app:eject": "yarn workspace @polygon-nft/react-app react-scripts-ts eject",
-    "prettify": "yarn prettier -w ."
+    "prettify": "yarn prettier --write ."
   },
   "repository": "git+https://github.com/SvetlioSS/Polygon-NFT.git",
   "author": "Svetoslav Spasov <svetoslav.spasov@svetoslav.s.spasov.com>",
@@ -26,10 +32,10 @@
     ]
   },
   "devDependencies": {
-    "prettier": "^2.5.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.19"
+    "prettier": "^2.5.1"
   },
   "prettier": {
-    "singleQuote": true
+    "singleQuote": true,
+    "arrowParens": "avoid"
   }
 }

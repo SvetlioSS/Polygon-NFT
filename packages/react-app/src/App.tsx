@@ -8,10 +8,19 @@ import Column from './components/Column';
 import Wrapper from './components/Wrapper';
 import Header from './components/Header';
 import Loader from './components/Loader';
+import Button from './components/Button';
 import ConnectButton from './components/ConnectButton';
+
+import {
+  NFT,
+  NFT_ROOT_TUNNEL,
+  NFT_ROOT_ADDRESS,
+  NFT_ROOT_TUNNEL_ADDRESS,
+} from './constants';
 
 import { Web3Provider } from '@ethersproject/providers';
 import { getChainData } from './helpers/utilities';
+import { getContract } from './helpers/ethers';
 
 const SLayout = styled.div`
   position: relative;
@@ -56,7 +65,8 @@ interface IAppState {
   chainId: number;
   pendingRequest: boolean;
   result: any | null;
-  electionContract: any | null;
+  rootTokenContract: any | null,
+  rootTunnelContract: any | null,
   info: any | null;
 }
 
@@ -68,7 +78,8 @@ const INITIAL_STATE: IAppState = {
   chainId: 1,
   pendingRequest: false,
   result: null,
-  electionContract: null,
+  rootTokenContract: null,
+  rootTunnelContract: null,
   info: null,
 };
 
@@ -108,14 +119,35 @@ class App extends React.Component<any, any> {
       ? this.provider.selectedAddress
       : this.provider?.accounts[0];
 
+    const rootTokenContract = getContract(
+      NFT_ROOT_ADDRESS,
+      NFT.abi,
+      library,
+      address
+    );
+
+    const rootTunnelContract = getContract(
+      NFT_ROOT_TUNNEL_ADDRESS,
+      NFT_ROOT_TUNNEL.abi,
+      library,
+      address
+    );
+
     await this.setState({
       library,
       chainId: network.chainId,
       address,
       connected: true,
+      rootTokenContract,
+      rootTunnelContract
     });
 
     await this.subscribeToProviderEvents(this.provider);
+  };
+
+  public onDeposit = async () => {
+    await this.state.rootTokenContract.approve(NFT_ROOT_TUNNEL_ADDRESS, 0);
+    await this.state.rootTunnelContract.deposit(NFT_ROOT_ADDRESS, this.state.address, 0);
   };
 
   public subscribeToProviderEvents = async (provider: any) => {
@@ -207,6 +239,9 @@ class App extends React.Component<any, any> {
               <SLanding center>
                 {!this.state.connected && (
                   <ConnectButton onClick={this.onConnect} />
+                )}
+                {this.state.connected && (
+                  <Button onClick={this.onDeposit}>{'Deposit'}</Button>
                 )}
               </SLanding>
             )}

@@ -3,24 +3,17 @@ const { NFTStorage, File } = require('nft.storage');
 const fs = require('fs');
 const storage = new NFTStorage({ token: process.env.NFT_STORAGE_API_KEY });
 
-const LimeGameItem = require('../artifacts/contracts/LimeGameItem.sol/LimeGameItem.json');
+const FxLimeGameItem = require('../artifacts/contracts/FxLimeGameItem.sol/FxLimeGameItem.json');
 
-const provider = new hre.ethers.providers.JsonRpcProvider(
-  'https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzpLTwAw3fzd2l5J6i4'
-);
+// const provider = new hre.ethers.providers.JsonRpcProvider(process.env.MUMBAI_ALCHEMY_URL);
+const provider = new hre.ethers.providers.JsonRpcProvider(process.env.GOERLI_ALCHEMY_URL);
 
 const wallet = new hre.ethers.Wallet(
   process.env.NFT_OWNER_PRIVATE_KEY,
   provider
 );
 
-const limeGameItemContract = new hre.ethers.Contract(
-  '0x079F3474b0EEadf866C40566b45B41A31139519F',
-  LimeGameItem.abi,
-  wallet
-);
-
-const mint = async (name, description, filePath, fileName, type) => {
+const mint = async (contract, name, description, filePath, fileName, type) => {
   console.log('Minting "%s"', name);
 
   const metadata = await storage.store({
@@ -36,7 +29,7 @@ const mint = async (name, description, filePath, fileName, type) => {
     metadata.embed()
   );
 
-  await limeGameItemContract.safeMint(
+  await contract.mint(
     process.env.NFT_OWNER_PUBLIC_KEY,
     metadata.url
   );
@@ -44,8 +37,15 @@ const mint = async (name, description, filePath, fileName, type) => {
   console.log('Minting "%s" finished', name);
 };
 
-module.exports = async () => {
+module.exports = async contract => {
+  const fxLimeGameItem = new hre.ethers.Contract(
+    contract,
+    FxLimeGameItem.abi,
+    wallet
+  );
+
   await mint(
+    fxLimeGameItem,
     'The Dwarf Killer',
     'To kill a dwarf or not to kill a dwarf? This is the question.',
     './assets/the-dwarf-killer.jpg',
@@ -54,6 +54,7 @@ module.exports = async () => {
   );
 
   await mint(
+    fxLimeGameItem,
     'Shield of Vengeance',
     'For vengeance!',
     './assets/shield-of-vengeance.jpg',
@@ -62,6 +63,7 @@ module.exports = async () => {
   );
 
   await mint(
+    fxLimeGameItem,
     'Swords of Justice',
     'Kill the unworthy ones!',
     './assets/swords-of-justice.jpg',

@@ -5,6 +5,7 @@
   "private": true,
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.3",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
@@ -13,12 +14,21 @@
     "hardhat": "^2.7.1"
   },
   "dependencies": {
+    "@fxportal/maticjs-fxportal": "^1.1.1",
+    "@maticnetwork/maticjs": "^2.0.51",
     "@openzeppelin/contracts": "^4.4.0",
+    "fx-portal-contracts": "^0.8.0",
     "nft.storage": "^5.1.3"
   },
   "scripts": {
     "mint": "hardhat mint",
-    "deploy": "hardhat deploy-testnets --network matic",
+    "burn": "hardhat burn",
+    "connect": "hardhat connect",
+    "deposit": "hardhat deposit",
+    "deploy:mumbai": "hardhat deploy-testnets --network mumbai",
+    "deploy:goerli": "hardhat deploy-testnets --network goerli",
+    "verify:mumbai": "npx hardhat verify --network mumbai",
+    "verify:goerli": "npx hardhat verify --network goerli",
     "test": "hardhat test --network hardhat"
   }
 }
