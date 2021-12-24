@@ -1,35 +1,35 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
-describe('LimeGameItem', function () {
-  let limeGameItemFactory;
-  let limeGameItem;
+describe('FxLimeGameItem', function () {
+  let fxLimeGameItemFactory;
+  let fxLimeGameItem;
   let owner;
   let addr1;
 
   before(async () => {
     [owner, addr1] = await ethers.getSigners();
-    limeGameItemFactory = await ethers.getContractFactory('LimeGameItem');
-    limeGameItem = await limeGameItemFactory.deploy();
-    await limeGameItem.deployed();
+    fxLimeGameItemFactory = await ethers.getContractFactory('FxLimeGameItem');
+    fxLimeGameItem = await fxLimeGameItemFactory.deploy();
+    await fxLimeGameItem.deployed();
   });
 
   it('Should have no tokens', async function () {
-    expect(await limeGameItem.totalSupply()).to.equal(0);
+    expect(await fxLimeGameItem.totalSupply()).to.equal(0);
   });
 
   it('Should successfully mint a token when called by owner', async function () {
-    const safeMintResultsTx = await limeGameItem.safeMint(
+    const mintResultsTx = await fxLimeGameItem.mint(
       addr1.address,
       'some.dummy.url'
     );
-    await safeMintResultsTx.wait();
-    expect(await limeGameItem.totalSupply()).to.equal(1);
+    await mintResultsTx.wait();
+    expect(await fxLimeGameItem.totalSupply()).to.equal(1);
   });
 
   it('Should throw an error when trying to mint a token when called by non-owners', async function () {
     expect(
-      limeGameItem.connect(addr1).safeMint(addr1.address, 'some.dummy.url')
+      fxLimeGameItem.connect(addr1).mint(addr1.address, 'some.dummy.url')
     ).to.be.revertedWith('Ownable: caller is not the owner');
   });
 });

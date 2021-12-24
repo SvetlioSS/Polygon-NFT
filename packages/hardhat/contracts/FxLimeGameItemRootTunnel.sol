@@ -25,7 +25,8 @@ contract FxLimeGameItemRootTunnel is FxBaseRootTunnel, Create2, IERC721Receiver 
         address indexed rootToken,
         address indexed depositor,
         address indexed userAddress,
-        uint256 id
+        uint256 id,
+        string uri
     );
 
     mapping(address => address) public rootToChildTokens;
@@ -78,7 +79,8 @@ contract FxLimeGameItemRootTunnel is FxBaseRootTunnel, Create2, IERC721Receiver 
     function deposit(
         address rootToken,
         address user,
-        uint256 tokenId
+        uint256 tokenId,
+        string memory uri
     ) public {
         // map token if not mapped
         if (rootToChildTokens[rootToken] == address(0x0)) {
@@ -92,10 +94,10 @@ contract FxLimeGameItemRootTunnel is FxBaseRootTunnel, Create2, IERC721Receiver 
             tokenId
         );
 
-        // DEPOSIT, encode(rootToken, depositor, user, tokenId)
-        bytes memory message = abi.encode(DEPOSIT, abi.encode(rootToken, msg.sender, user, tokenId));
+        // DEPOSIT, encode(rootToken, depositor, user, tokenId, uri)
+        bytes memory message = abi.encode(DEPOSIT, abi.encode(rootToken, msg.sender, user, tokenId, uri));
         _sendMessageToChild(message);
-        emit FxDepositERC721(rootToken, msg.sender, user, tokenId);
+        emit FxDepositERC721(rootToken, msg.sender, user, tokenId, uri);
     }
 
     // exit processor
