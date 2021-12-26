@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { Create2 } from 'fx-portal-contracts/contracts/lib/Create2.sol';
+// import { Create2 } from 'fx-portal-contracts/contracts/lib/Create2.sol';
 import { IERC721Receiver } from 'fx-portal-contracts/contracts/lib/IERC721Receiver.sol';
 import { FxBaseChildTunnel } from 'fx-portal-contracts/contracts/tunnel/FxBaseChildTunnel.sol';
 import './IFxLimeGameItem.sol';
@@ -9,7 +9,7 @@ import './IFxLimeGameItem.sol';
 /**
  * @title FxLimeGameItemChildTunnel
  */
-contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, Create2, IERC721Receiver {
+contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, IERC721Receiver {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
     bytes32 public constant MAP_TOKEN = keccak256("MAP_TOKEN");
     string public constant SUFFIX_NAME = " (FXERC721)";
@@ -17,15 +17,14 @@ contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, Create2, IERC721Receive
 
     // event for token maping
     event TokenMapped(address indexed rootToken, address indexed childToken);
-    event SyncDeposit(address indexed to, string indexed uri);
+    event TestMessage(string indexed message);
     // root to child token
-    mapping(address => address) public rootToChildToken;
+    // mapping(address => address) public rootToChildToken;
     // token template
-    address public tokenTemplate;
+    address public childTokenAddress;
 
-    constructor(address _fxChild, address _tokenTemplate) FxBaseChildTunnel(_fxChild) {
-        tokenTemplate = _tokenTemplate;
-        require(_isContract(_tokenTemplate), "Token template is not contract");
+    constructor(address _fxChild, address _childToken) FxBaseChildTunnel(_fxChild) {
+        childTokenAddress = _childToken;
     }
 
     function onERC721Received(
@@ -62,53 +61,56 @@ contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, Create2, IERC721Receive
         bytes memory data
     ) internal override validateSender(sender) {
         // decode incoming data
+        emit TestMessage('_processMessageFromRoot');
         (bytes32 syncType, bytes memory syncData) = abi.decode(data, (bytes32, bytes));
+        emit TestMessage('_processMessageFromRoot decode');
 
         if (syncType == DEPOSIT) {
             _syncDeposit(syncData);
-        } else if (syncType == MAP_TOKEN) {
-            _mapToken(syncData);
         } else {
             revert("FxLimeGameItemChildTunnel: INVALID_SYNC_TYPE");
         }
     }
 
-    function _mapToken(bytes memory syncData) internal returns (address) {
-        (address rootToken) = abi.decode(syncData, (address));
+    // function _mapToken(bytes memory syncData) internal returns (address) {
+    //     (address rootToken) = abi.decode(syncData, (address));
 
-        // get root to child token
-        address childToken = rootToChildToken[rootToken];
+    //     // get root to child token
+    //     address childToken = rootToChildToken[rootToken];
 
-        // check if it's already mapped
-        require(childToken == address(0x0), "FxLimeGameItemChildTunnel: ALREADY_MAPPED");
+    //     // check if it's already mapped
+    //     require(childToken == address(0x0), "FxLimeGameItemChildTunnel: ALREADY_MAPPED");
 
-        // deploy new child token
-        bytes32 salt = keccak256(abi.encodePacked(rootToken));
-        childToken = createClone(salt, tokenTemplate);
-        IFxLimeGameItem(childToken).initialize(
-            address(this),
-            rootToken
-        );
+    //     // deploy new child token
+    //     bytes32 salt = keccak256(abi.encodePacked(rootToken));
+    //     childToken = createClone(salt, tokenTemplate);
+    //     IFxLimeGameItem(childToken).initialize(
+    //         address(this),
+    //         rootToken
+    //     );
 
-        // map the token
-        rootToChildToken[rootToken] = childToken;
-        emit TokenMapped(rootToken, childToken);
+    //     // map the token
+    //     rootToChildToken[rootToken] = childToken;
+    //     emit TokenMapped(rootToken, childToken);
 
-        // return new child token
-        return childToken;
-    }
+    //     // return new child token
+    //     return childToken;
+    // }
 
     function _syncDeposit(bytes memory syncData) internal {
+        emit TestMessage('_syncDeposit');
         (address rootToken, address depositor, address to, uint256 tokenId, string memory uri) = abi.decode(
             syncData,
             (address, address, address, uint256, string)
         );
-        address childToken = rootToChildToken[rootToken];
+        emit TestMessage('_syncDeposit after decode');
+        // address childToken = rootToChildToken[rootToken];
 
         // deposit tokens
-        IFxLimeGameItem childTokenContract = IFxLimeGameItem(childToken);
+        IFxLimeGameItem childTokenContract = IFxLimeGameItem(childTokenAddress);
+        emit TestMessage('childTokenContract after instantiation');
         childTokenContract.mint(to, uri);
-        emit SyncDeposit(to, uri);
+        emit TestMessage('childTokenContract after mint');
     }
 
     function _withdraw(
@@ -121,10 +123,10 @@ contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, Create2, IERC721Receive
         address rootToken = childTokenContract.connectedToken();
 
         // validate root and child token mapping
-        require(
-            childToken != address(0x0) && rootToken != address(0x0) && childToken == rootToChildToken[rootToken],
-            "FxLimeGameItemChildTunnel: NO_MAPPED_TOKEN"
-        );
+        // require(
+        //     childToken != address(0x0) && rootToken != address(0x0) && childToken == rootToChildToken[rootToken],
+        //     "FxLimeGameItemChildTunnel: NO_MAPPED_TOKEN"
+        // );
 
         require(msg.sender == childTokenContract.ownerOf(tokenId));
 
@@ -133,14 +135,5 @@ contract FxLimeGameItemChildTunnel is FxBaseChildTunnel, Create2, IERC721Receive
 
         // send message to root regarding token burn
         _sendMessageToRoot(abi.encode(rootToken, childToken, receiver, tokenId));
-    }
-
-    // check if address is contract
-    function _isContract(address _addr) private view returns (bool) {
-        uint32 size;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return (size > 0);
     }
 }

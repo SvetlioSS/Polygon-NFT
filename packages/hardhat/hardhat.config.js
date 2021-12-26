@@ -24,12 +24,32 @@ task('deploy-testnets', 'Deploys contract on a provided network').setAction(
         address
       );
     } else {
-      const address = await deploy('FxLimeGameItem');
+      await deploy('FxLimeGameItem');
       await deploy(
         'FxLimeGameItemRootTunnel',
         process.env.GOERLI_CHECKPOINT_MANAGER_ADDRESS,
-        process.env.GOERLI_FXROOT_ADDRESS,
+        process.env.GOERLI_FXROOT_ADDRESS
+      );
+    }
+  }
+);
+
+task('deploy-testnets2', 'Deploys contract on a provided network').setAction(
+  async () => {
+    const deploy = require('./scripts/deploy');
+    if (isPolygon) {
+      const address = await deploy('FxLimeGameItem');
+      await deploy(
+        'ChildTunnel',
+        process.env.MUMBAI_FXCHILD_ADDRESS,
         address
+      );
+    } else {
+      await deploy('FxLimeGameItem');
+      await deploy(
+        'RootTunnel',
+        process.env.GOERLI_CHECKPOINT_MANAGER_ADDRESS,
+        process.env.GOERLI_FXROOT_ADDRESS
       );
     }
   }
@@ -70,9 +90,10 @@ task('debug', 'Debug task that change')
 task('connect', 'Connects an Ethereum contract with a Polygon one')
   .addParam('root', 'The Root Contract address')
   .addParam('child', 'The Child Contract address')
+  .addParam('childToken', 'The Child Token address')
   .setAction(async taskArgs => {
     const connect = require('./scripts/connect');
-    await connect(taskArgs.root, taskArgs.child);
+    await connect(taskArgs.root, taskArgs.child, taskArgs.childToken);
   });
 
 // Workaround until @nomiclabs/hardhat-etherscan provide support for multiple api keys.

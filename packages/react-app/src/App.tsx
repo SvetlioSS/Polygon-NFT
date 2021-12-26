@@ -16,6 +16,9 @@ import {
   NFT_ROOT_TUNNEL,
   NFT_ROOT_ADDRESS,
   NFT_ROOT_TUNNEL_ADDRESS,
+  ROOT_TUNNEL_ABI,
+  ROOT_TUNNEL,
+  ROOT_TOKEN
 } from './constants';
 
 import { Web3Provider } from '@ethersproject/providers';
@@ -67,6 +70,7 @@ interface IAppState {
   result: any | null;
   rootTokenContract: any | null,
   rootTunnelContract: any | null,
+  rootTunnelContract2: any | null,
   info: any | null;
 }
 
@@ -80,6 +84,7 @@ const INITIAL_STATE: IAppState = {
   result: null,
   rootTokenContract: null,
   rootTunnelContract: null,
+  rootTunnelContract2: null,
   info: null,
 };
 
@@ -120,7 +125,7 @@ class App extends React.Component<any, any> {
       : this.provider?.accounts[0];
 
     const rootTokenContract = getContract(
-      NFT_ROOT_ADDRESS,
+      ROOT_TOKEN,
       NFT.abi,
       library,
       address
@@ -133,21 +138,48 @@ class App extends React.Component<any, any> {
       address
     );
 
+    const rootTunnelContract2 = getContract(
+      ROOT_TUNNEL,
+      ROOT_TUNNEL_ABI.abi,
+      library,
+      address
+    );
+
     await this.setState({
       library,
       chainId: network.chainId,
       address,
       connected: true,
       rootTokenContract,
-      rootTunnelContract
+      rootTunnelContract,
+      rootTunnelContract2
     });
 
     await this.subscribeToProviderEvents(this.provider);
   };
 
   public onDeposit = async () => {
-    await this.state.rootTokenContract.approve(NFT_ROOT_TUNNEL_ADDRESS, 0);
-    await this.state.rootTunnelContract.deposit(NFT_ROOT_ADDRESS, this.state.address, 0);
+    const tokenId = 1;
+    const tokenURI = await this.state.rootTokenContract.tokenURI(tokenId);
+    await this.state.rootTokenContract.approve(NFT_ROOT_TUNNEL_ADDRESS, tokenId);
+    await this.state.rootTunnelContract.deposit(NFT_ROOT_ADDRESS, this.state.address, tokenId, tokenURI);
+  };
+
+  public onDeposit2 = async () => {
+    const tokenId = 0;
+    const tokenURI = await this.state.rootTokenContract.tokenURI(tokenId);
+    console.log('Awaiting deposit approval...');
+    const transaction = await this.state.rootTokenContract.approve(ROOT_TUNNEL, tokenId);
+    const transactionReceipt = await transaction.wait();
+    if (transactionReceipt.status === 1) {
+      console.log('Deposit approval successful!');
+      console.log('Depositing...');
+      const depositTransaction = await this.state.rootTunnelContract2.deposit(ROOT_TOKEN, this.state.address, tokenId, tokenURI);
+      const depositTransactionReceipt = await depositTransaction.wait();
+      if (depositTransactionReceipt.status === 1) {
+        console.log('Deposit successful!');
+      }
+    }
   };
 
   public subscribeToProviderEvents = async (provider: any) => {
@@ -242,6 +274,9 @@ class App extends React.Component<any, any> {
                 )}
                 {this.state.connected && (
                   <Button onClick={this.onDeposit}>{'Deposit'}</Button>
+                )}
+                {this.state.connected && (
+                  <Button onClick={this.onDeposit2}>{'Deposit2'}</Button>
                 )}
               </SLanding>
             )}

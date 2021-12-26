@@ -5,22 +5,21 @@ This project demonstrates a basic Hardhat use case. It comes with a sample contr
 Deploying:
 
 Matic: 
-	NFT: 0x0fc56Fc7bAd638047D857e11D6acF086EA4A27c3
-	Tunnel: 0xCa54471E56Fb95491ac6A7Ac8D3d2B6459d3dd73
+	NFT: 0x84e1106170366244cE1DEFd03Eb8caA5b6C5D02D
+	Tunnel: 0x0188EdC7dD2d0cD60aC1fA878765e660200B656b
 Goerli: 
-	NFT: 0x4364bbCa36f110ca3297a3527Bd71290D1197ff4
-	Tunnel: 0x33C7F1E13e61fFdBEd34F2b5bD0361F77748df6F
+	NFT: 0x49002dAd19975AB01007274E460717A7D3a68A8A
+	Tunnel: 0xc541a969Dfb626C1B806E336Ca85256Cc7EdcB5F
+
 
 ```shell
 yarn hardhat:deploy:mumbai
 yarn hardhat:deploy:goerli
-yarn hardhat:connect --root "0x33C7F1E13e61fFdBEd34F2b5bD0361F77748df6F" --child "0xCa54471E56Fb95491ac6A7Ac8D3d2B6459d3dd73"
-yarn hardhat:mint --address "0x4364bbCa36f110ca3297a3527Bd71290D1197ff4"
+yarn hardhat:connect --root "0xc541a969Dfb626C1B806E336Ca85256Cc7EdcB5F" --child "0x0188EdC7dD2d0cD60aC1fA878765e660200B656b" --child-token "0x84e1106170366244cE1DEFd03Eb8caA5b6C5D02D"
+yarn hardhat:mint --address "0x49002dAd19975AB01007274E460717A7D3a68A8A"
 
-yarn hardhat:verify:goerli "0x4364bbCa36f110ca3297a3527Bd71290D1197ff4"
-yarn hardhat:verify:goerli "0x33C7F1E13e61fFdBEd34F2b5bD0361F77748df6F"
-yarn hardhat:verify:mumbai "0x0fc56Fc7bAd638047D857e11D6acF086EA4A27c3"
-yarn hardhat:verify:mumbai "0xCa54471E56Fb95491ac6A7Ac8D3d2B6459d3dd73"
+yarn hardhat:verify:goerli "0xE4581cD344903DbA6a5D6304A3b9c0db927cAe49"
+yarn hardhat:verify:mumbai "0xF8fa292dB6D978F7b74B905f12976B6a93E84fC1"
 ```
 
 Deployment steps:
@@ -28,10 +27,10 @@ Deployment steps:
 ```shell
 yarn hardhat:deploy:mumbai
 yarn hardhat:deploy:goerli
-yarn hardhat:connect --root "0x772598929bc0e9aE53D86d8d5c344717c2a1ff0a" --child "0xd86b39f1A04Df33dA66153873Fb28DD7230c121C"
-yarn hardhat:mint --address "0x634ef21F048f48e992dB3f41EBe9573f19a7AA0D"
-yarn hardhat:verify:mumbai "0x9f1fc793B4Aba99d0D55b89Eb9558b498d08e677"
-yarn hardhat:verify:goerli "0x9f1fc793B4Aba99d0D55b89Eb9558b498d08e677"
+yarn hardhat:connect --root "0x772598929bc0e9aE53D86d8d5c344717c2a1ff0a" --child "0xd86b39f1A04Df33dA66153873Fb28DD7230c121C" --child-token "setsdgsdg"
+yarn hardhat:mint --address "0x02068BDa212854621893c6F4756b0EA93F401Aa4"
+yarn hardhat:verify:mumbai "0x2eEDFCC40a3a3A3fefe929b32Ac14Ab540F3D551"
+yarn hardhat:verify:goerli "0x4703eB1793BFa49C57433c7cE6AA793bB4Ab21a4"
 ```
 
 2. Update matamask tokens

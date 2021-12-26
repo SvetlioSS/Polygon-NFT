@@ -29,10 +29,11 @@ const mint = async (contract, name, description, filePath, fileName, type) => {
     metadata.embed()
   );
 
-  await contract.mint(
+  const transaction = await contract.mint(
     process.env.NFT_OWNER_PUBLIC_KEY,
     metadata.url
   );
+  await transaction.wait();
 
   console.log('Minting "%s" finished', name);
 };

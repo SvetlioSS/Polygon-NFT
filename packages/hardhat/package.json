@@ -25,8 +25,11 @@
     "burn": "hardhat burn",
     "connect": "hardhat connect",
     "deposit": "hardhat deposit",
+    "debug": "hardhat debug",
     "deploy:mumbai": "hardhat deploy-testnets --network mumbai",
     "deploy:goerli": "hardhat deploy-testnets --network goerli",
+    "deploy:mumbai2": "hardhat deploy-testnets2 --network mumbai",
+    "deploy:goerli2": "hardhat deploy-testnets2 --network goerli",
     "verify:mumbai": "npx hardhat verify --network mumbai",
     "verify:goerli": "npx hardhat verify --network goerli",
     "test": "npx hardhat test --network hardhat"

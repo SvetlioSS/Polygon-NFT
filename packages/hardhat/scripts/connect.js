@@ -1,6 +1,7 @@
 const hre = require('hardhat');
 const FxLimeGameItemChildTunnel = require('../artifacts/contracts/FxLimeGameItemChildTunnel.sol/FxLimeGameItemChildTunnel.json');
 const FxLimeGameItemRootTunnel = require('../artifacts/contracts/FxLimeGameItemRootTunnel.sol/FxLimeGameItemRootTunnel.json');
+const FxLimeGameItem = require('../artifacts/contracts/FxLimeGameItem.sol/FxLimeGameItem.json');
 
 const mumbaiProvider = new hre.ethers.providers.JsonRpcProvider(
   process.env.MUMBAI_ALCHEMY_URL
@@ -18,7 +19,7 @@ const walletGoerli = new hre.ethers.Wallet(
   goerliProvider
 );
 
-module.exports = async (root, child) => {
+module.exports = async (root, child, childToken) => {
   console.log('Setting tunnels...');
 
   const fxLimeGameItemChildTunnel = new hre.ethers.Contract(
@@ -34,6 +35,13 @@ module.exports = async (root, child) => {
     walletGoerli
   );
   await fxLimeGameItemRootTunnel.setFxChildTunnel(child);
+
+  const fxLimeGameItem = new hre.ethers.Contract(
+    childToken,
+    FxLimeGameItem.abi,
+    walletMumbai
+  );
+  await fxLimeGameItem.setFxManager(fxLimeGameItemChildTunnel.address);
   
   console.log('Tunnels ready...');
 };

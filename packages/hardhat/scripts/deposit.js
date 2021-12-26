@@ -38,9 +38,11 @@ module.exports = async () => {
   //   .approve(erc721Predicate, tokenId)
   //   .send({ from: "0x4A8C755C8715D813E9d8580411D44Ea23882BCCE" })
 
+  const tokenId = 1;
+  const tokenURI = await fxLimeGameItem.tokenURI(tokenId);
   console.log('Awaiting approval...');
-  await fxLimeGameItem.approve(rootTunnelAddress, 1);
+  await fxLimeGameItem.approve(rootTunnelAddress, tokenId);
   console.log('Awaiting deposit...');
-  await fxRootTunnel.deposit(rootTokenAddress, "0x4A8C755C8715D813E9d8580411D44Ea23882BCCE", 1);
+  await fxRootTunnel.deposit(rootTokenAddress, '0x4A8C755C8715D813E9d8580411D44Ea23882BCCE', tokenId, tokenURI);
   console.log('DONE...')
 };
