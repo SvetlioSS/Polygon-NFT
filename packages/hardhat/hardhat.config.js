@@ -19,27 +19,6 @@ task('deploy-testnets', 'Deploys contract on a provided network').setAction(
     if (isPolygon) {
       const address = await deploy('FxLimeGameItem');
       await deploy(
-        'FxLimeGameItemChildTunnel',
-        process.env.MUMBAI_FXCHILD_ADDRESS,
-        address
-      );
-    } else {
-      await deploy('FxLimeGameItem');
-      await deploy(
-        'FxLimeGameItemRootTunnel',
-        process.env.GOERLI_CHECKPOINT_MANAGER_ADDRESS,
-        process.env.GOERLI_FXROOT_ADDRESS
-      );
-    }
-  }
-);
-
-task('deploy-testnets2', 'Deploys contract on a provided network').setAction(
-  async () => {
-    const deploy = require('./scripts/deploy');
-    if (isPolygon) {
-      const address = await deploy('FxLimeGameItem');
-      await deploy(
         'ChildTunnel',
         process.env.MUMBAI_FXCHILD_ADDRESS,
         address

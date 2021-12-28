@@ -10,20 +10,25 @@ import Header from './components/Header';
 import Loader from './components/Loader';
 import Button from './components/Button';
 import ConnectButton from './components/ConnectButton';
+import { POSClient, use, setProofApi } from "@maticnetwork/maticjs";
+import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
 
 import {
-  NFT,
-  NFT_ROOT_TUNNEL,
-  NFT_ROOT_ADDRESS,
-  NFT_ROOT_TUNNEL_ADDRESS,
+  TOKEN_ABI,
   ROOT_TUNNEL_ABI,
   ROOT_TUNNEL,
-  ROOT_TOKEN
+  ROOT_TOKEN,
+  CHILD_TOKEN,
+  CHILD_TUNNEL,
+  CHILD_TUNNEL_ABI
 } from './constants';
 
 import { Web3Provider } from '@ethersproject/providers';
 import { getChainData } from './helpers/utilities';
 import { getContract } from './helpers/ethers';
+
+use(Web3ClientPlugin);
+const posClient = new POSClient();
 
 const SLayout = styled.div`
   position: relative;
@@ -70,8 +75,11 @@ interface IAppState {
   result: any | null;
   rootTokenContract: any | null,
   rootTunnelContract: any | null,
-  rootTunnelContract2: any | null,
+  childTunnelContract: any | null,
   info: any | null;
+  proof: any | null;
+  posClient: any | null;
+  burnTxHash: string;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -84,8 +92,11 @@ const INITIAL_STATE: IAppState = {
   result: null,
   rootTokenContract: null,
   rootTunnelContract: null,
-  rootTunnelContract2: null,
+  childTunnelContract: null,
   info: null,
+  proof: null,
+  posClient: null,
+  burnTxHash: ''
 };
 
 class App extends React.Component<any, any> {
@@ -123,24 +134,43 @@ class App extends React.Component<any, any> {
     const address = this.provider.selectedAddress
       ? this.provider.selectedAddress
       : this.provider?.accounts[0];
+    
+    await posClient.init({
+        network: 'testnet',
+        version: 'mumbai',
+        parent: {
+          provider: 'https://eth-goerli.alchemyapi.io/v2/kbgkxIOiGn6EE2p5JKCDUQ6XIuZ0S3Gb',
+          defaultConfig: {
+            from: address
+          }
+        },
+        child: {
+          provider: 'https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzpLTwAw3fzd2l5J6i4',
+          defaultConfig: {
+            from: address
+          }
+        }
+    });
+
+    setProofApi("https://apis.matic.network/");
 
     const rootTokenContract = getContract(
       ROOT_TOKEN,
-      NFT.abi,
+      TOKEN_ABI.abi,
       library,
       address
     );
 
     const rootTunnelContract = getContract(
-      NFT_ROOT_TUNNEL_ADDRESS,
-      NFT_ROOT_TUNNEL.abi,
+      ROOT_TUNNEL,
+      ROOT_TUNNEL_ABI.abi,
       library,
       address
     );
 
-    const rootTunnelContract2 = getContract(
-      ROOT_TUNNEL,
-      ROOT_TUNNEL_ABI.abi,
+    const childTunnelContract = getContract(
+      CHILD_TUNNEL,
+      CHILD_TUNNEL_ABI.abi,
       library,
       address
     );
@@ -152,20 +182,14 @@ class App extends React.Component<any, any> {
       connected: true,
       rootTokenContract,
       rootTunnelContract,
-      rootTunnelContract2
+      childTunnelContract,
+      posClient
     });
 
     await this.subscribeToProviderEvents(this.provider);
   };
 
   public onDeposit = async () => {
-    const tokenId = 1;
-    const tokenURI = await this.state.rootTokenContract.tokenURI(tokenId);
-    await this.state.rootTokenContract.approve(NFT_ROOT_TUNNEL_ADDRESS, tokenId);
-    await this.state.rootTunnelContract.deposit(NFT_ROOT_ADDRESS, this.state.address, tokenId, tokenURI);
-  };
-
-  public onDeposit2 = async () => {
     const tokenId = 0;
     const tokenURI = await this.state.rootTokenContract.tokenURI(tokenId);
     console.log('Awaiting deposit approval...');
@@ -174,13 +198,44 @@ class App extends React.Component<any, any> {
     if (transactionReceipt.status === 1) {
       console.log('Deposit approval successful!');
       console.log('Depositing...');
-      const depositTransaction = await this.state.rootTunnelContract2.deposit(ROOT_TOKEN, this.state.address, tokenId, tokenURI);
+      const depositTransaction = await this.state.rootTunnelContract.deposit(ROOT_TOKEN, this.state.address, tokenId, tokenURI);
       const depositTransactionReceipt = await depositTransaction.wait();
       if (depositTransactionReceipt.status === 1) {
         console.log('Deposit successful!');
       }
     }
   };
+
+  public onWithdraw = async () => {
+      const tokenId = 0;
+      console.log('Awaiting withdrawal...');
+      const transaction = await this.state.childTunnelContract.withdraw(CHILD_TOKEN, tokenId);
+      const transactionReceipt = await transaction.wait();
+      this.setState({ burnTxHash: transactionReceipt.transactionHash });
+      console.log('Withdrawal successful');
+  };
+
+  public onPrintProof = async () => {
+    const isCheckpointed = await this.state.posClient.isCheckPointed(this.state.burnTxHash);
+    if (!isCheckpointed) {
+      alert('The transaction is not checkpointed yet!');
+      return;
+    }
+    console.log('Preparing proof...');
+    const proof = await posClient.exitUtil.buildPayloadForExit(
+      this.state.burnTxHash,
+      "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036", // SEND_MESSAGE_EVENT_SIG, do not change
+      true
+    );
+    this.setState({ proof });
+    console.log('Proof ', proof);
+  }
+
+  public onClaim = async () => {
+    console.log('Claiming...');
+    await this.state.rootTunnelContract.receiveMessage(this.state.proof);
+    console.log('Claimed.');
+  }
 
   public subscribeToProviderEvents = async (provider: any) => {
     if (!provider.on) {
@@ -196,6 +251,7 @@ class App extends React.Component<any, any> {
 
   public async unSubscribe(provider: any) {
     // Workaround for metamask widget > 9.0.3 (provider.off is undefined);
+    // @ts-ignore
     window.location.reload(false);
     if (!provider.off) {
       return;
@@ -273,10 +329,16 @@ class App extends React.Component<any, any> {
                   <ConnectButton onClick={this.onConnect} />
                 )}
                 {this.state.connected && (
-                  <Button onClick={this.onDeposit}>{'Deposit'}</Button>
+                  <Button onClick={this.onDeposit}>{'Deposit (Goerli)'}</Button>
                 )}
                 {this.state.connected && (
-                  <Button onClick={this.onDeposit2}>{'Deposit2'}</Button>
+                  <Button onClick={this.onWithdraw}>{'Withdraw (Mumbai)'}</Button>
+                )}
+                {this.state.connected && (
+                  <Button onClick={this.onPrintProof}>{'Get Proof (Mumbai)'}</Button>
+                )}
+                {this.state.connected && this.state.proof && (
+                  <Button onClick={this.onClaim}>{'Claim (Goerli)'}</Button>
                 )}
               </SLanding>
             )}

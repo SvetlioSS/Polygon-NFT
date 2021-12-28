@@ -19,7 +19,7 @@ describe('Root Tunnel', function () {
     fxLimeGameItemContract = await fxLimeGameItem.deployed();
 
     const rootTunnelFactory = await ethers.getContractFactory(
-      'RootTunnelMock'
+      '__RootTunnel'
     );
     const rootTunnel = await rootTunnelFactory.deploy(
       randomAddress,

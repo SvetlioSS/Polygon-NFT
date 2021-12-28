@@ -19,7 +19,7 @@ describe('Child Tunnel', function () {
     fxLimeGameItemContract = await fxLimeGameItem.deployed();
 
     const childTunnelFactory = await ethers.getContractFactory(
-      'ChildTunnelMock'
+      '__ChildTunnel'
     );
     const childTunnel = await childTunnelFactory.deploy(
       randomAddress,
@@ -66,23 +66,9 @@ describe('Child Tunnel', function () {
     expect(await fxLimeGameItemContract.ownerOf(tokenId)).to.equal(addr1.address);
   });
 
-  // it('Should successfully deposit NFT', async function () {
-  //   const tokenId = 0;
-  //   const tokenURI = await fxLimeGameItemContract.tokenURI(tokenId);
-
-  //   expect(await fxLimeGameItemContract.ownerOf(tokenId)).to.equal(addr1.address);
-
-  //   const transaction = await fxLimeGameItemContract.connect(addr1).approve(childTunnelContract.address, tokenId);
-  //   await transaction.wait();
-  //   await childTunnelContract.connect(addr1).deposit(fxLimeGameItemContract.address, addr1.address, tokenId, tokenURI);
-
-  //   expect(await fxLimeGameItemContract.totalSupply()).to.equal(1);
-  //   expect(await fxLimeGameItemContract.ownerOf(tokenId)).to.equal(childTunnelContract.address);
-  //   expect(await childTunnelContract.mockCommand()).to.equal('DEPOSIT');
-  //   expect(await childTunnelContract.mockRootToken()).to.equal(fxLimeGameItemContract.address);
-  //   expect(await childTunnelContract.mockSender()).to.equal(addr1.address);
-  //   expect(await childTunnelContract.mockUser()).to.equal(addr1.address);
-  //   expect(await childTunnelContract.mockTokenId()).to.equal(tokenId);
-  //   expect(await childTunnelContract.mockUri()).to.equal(tokenURI);
-  // });
+  it('Should successfully burn NFT after WITHDRAW', async () => {
+    const tokenId = 0;
+    await childTunnelContract.connect(addr1).withdraw(fxLimeGameItemContract.address, tokenId);
+    expect(await fxLimeGameItemContract.totalSupply()).to.equal(0);
+  });
 });

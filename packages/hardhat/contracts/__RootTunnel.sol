@@ -5,9 +5,9 @@ import { FxBaseRootTunnel } from 'fx-portal-contracts/contracts/tunnel/FxBaseRoo
 import './FxLimeGameItem.sol';
 
 /**
- * @title RootTunnel
+ * @title __RootTunnel
  */
-contract RootTunnelMock is FxBaseRootTunnel, IERC721Receiver {
+contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
 
     bytes public latestData;

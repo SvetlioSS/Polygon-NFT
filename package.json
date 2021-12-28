@@ -11,8 +11,6 @@
     "hardhat:connect": "yarn workspace @polygon-nft/hardhat connect",
     "hardhat:deploy:goerli": "yarn workspace @polygon-nft/hardhat deploy:goerli",
     "hardhat:deploy:mumbai": "yarn workspace @polygon-nft/hardhat deploy:mumbai",
-    "hardhat:deploy:mumbai2": "yarn workspace @polygon-nft/hardhat deploy:mumbai2",
-    "hardhat:deploy:goerli2": "yarn workspace @polygon-nft/hardhat deploy:goerli2",
     "hardhat:verify:goerli": "yarn workspace @polygon-nft/hardhat verify:goerli",
     "hardhat:verify:mumbai": "yarn workspace @polygon-nft/hardhat verify:mumbai",
     "hardhat:test": "yarn workspace @polygon-nft/hardhat test",

@@ -16,6 +16,13 @@ contract ChildTunnel is FxBaseChildTunnel {
         _childTokenAddress = childTokenAddress_;
     }
 
+    function withdraw(
+        address childToken,
+        uint256 tokenId
+    ) external {
+        _withdraw(childToken, tokenId);
+    }
+
     function _processMessageFromRoot(
         uint256, /* stateId */
         address sender,
@@ -23,19 +30,29 @@ contract ChildTunnel is FxBaseChildTunnel {
     ) internal override validateSender(sender) {
         (bytes32 syncType, bytes memory syncData) = abi.decode(data, (bytes32, bytes));
         if (syncType == DEPOSIT) {
-            _syncDeposit(syncData);
+            (, , address to, , string memory uri) = abi.decode(
+                syncData,
+                (address, address, address, uint256, string)
+            );
+
+            FxLimeGameItem childTokenContract = FxLimeGameItem(_childTokenAddress);
+            childTokenContract.mint(to, uri);
         } else {
             revert("FxLimeGameItemChildTunnel: INVALID_SYNC_TYPE");
         }
     }
 
-    function _syncDeposit(bytes memory syncData) internal {
-        (address rootToken, address depositor, address to, uint256 tokenId, string memory uri) = abi.decode(
-            syncData,
-            (address, address, address, uint256, string)
-        );
+    function _withdraw(
+        address childToken,
+        uint256 tokenId
+    ) internal {
+        FxLimeGameItem childTokenContract = FxLimeGameItem(childToken);
+        require(msg.sender == childTokenContract.ownerOf(tokenId));
 
-        FxLimeGameItem childTokenContract = FxLimeGameItem(_childTokenAddress);
-        childTokenContract.mint(to, uri);
+        // withdraw tokens
+        childTokenContract.burn(tokenId);
+
+        // send message to root regarding token burn
+        _sendMessageToRoot(abi.encode(childToken, tokenId));
     }
 }

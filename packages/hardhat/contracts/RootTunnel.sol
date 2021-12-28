@@ -9,7 +9,7 @@ import './FxLimeGameItem.sol';
  */
 contract RootTunnel is FxBaseRootTunnel, IERC721Receiver {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
-    bytes public latestData;
+    uint256 public number = 1991;
 
     event FxDepositERC721(
         address indexed rootToken,
@@ -38,8 +38,9 @@ contract RootTunnel is FxBaseRootTunnel, IERC721Receiver {
         emit FxDepositERC721(rootToken, msg.sender, user, tokenId, uri);
     }
     
-    function _processMessageFromChild(bytes memory data) internal override {
-        latestData = data;
+    function _processMessageFromChild(bytes memory message) internal override {
+        (, uint256 tokenId) = abi.decode(message, (address, uint256));
+        number = tokenId;
     }
 
     function onERC721Received(

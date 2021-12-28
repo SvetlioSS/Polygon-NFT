@@ -6,12 +6,9 @@ import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
 import '@openzeppelin/contracts/utils/Counters.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
-import "hardhat/console.sol";
-// import './IFxLimeGameItem.sol';
 
 contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     address internal _fxManager;
-    // address internal _connectedToken;
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
@@ -25,10 +22,6 @@ contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     function fxManager() public view returns (address) {
         return _fxManager;
     }
-
-    // function connectedToken() public view override returns (address) {
-    //     return _connectedToken;
-    // }
 
     function setFxManager(address fxManager_) public onlyOwner {
         _fxManager = fxManager_;
@@ -53,7 +46,7 @@ contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     }
 
     function burn(uint256 tokenId) public {
-        // require(msg.sender == _fxManager || msg.sender == owner(), "Invalid sender");
+        require(msg.sender == _fxManager, "Invalid sender");
         _burn(tokenId);
     }
 
