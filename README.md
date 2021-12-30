@@ -5,18 +5,18 @@ This project demonstrates a basic Hardhat use case. It comes with a sample contr
 Deploying:
 
 Matic: 
-	NFT: 0x7C16a38B774c697524871e2B94e58d16D517D515
-	Tunnel: 0xcC0290034C6f83327fDa1e3F5061648f83C55027
+	NFT: 0x7c0a941A23D89798996E1e2cD4c467C9D1A5A74d
+	Tunnel: 0xDf27d1Fd85f8Da8f40f053e3FD174AF0a40bF399
 Goerli: 
-	NFT: 0x14A161Dd83F608ddd3e360Df148f2Face90c88c3
-	Tunnel: 0x8344e70315420adC6D2f932653cE6572d4b6B2D8
+	NFT: 0x3794b0e8C9DE667342e88B974D989C91F4371397
+	Tunnel: 0x7c0a941A23D89798996E1e2cD4c467C9D1A5A74d
 
 
 ```shell
 yarn hardhat:deploy:mumbai
 yarn hardhat:deploy:goerli
-yarn hardhat:connect --root "0x8344e70315420adC6D2f932653cE6572d4b6B2D8" --child "0xcC0290034C6f83327fDa1e3F5061648f83C55027" --child-token "0x7C16a38B774c697524871e2B94e58d16D517D515"
-yarn hardhat:mint --address "0x14A161Dd83F608ddd3e360Df148f2Face90c88c3"
+yarn hardhat:connect --root "0x7c0a941A23D89798996E1e2cD4c467C9D1A5A74d" --child "0xDf27d1Fd85f8Da8f40f053e3FD174AF0a40bF399" --child-token "0x7c0a941A23D89798996E1e2cD4c467C9D1A5A74d"
+yarn hardhat:mint --address "0x3794b0e8C9DE667342e88B974D989C91F4371397"
 
 yarn hardhat:verify:goerli "0xE4581cD344903DbA6a5D6304A3b9c0db927cAe49"
 yarn hardhat:verify:mumbai "0xF8fa292dB6D978F7b74B905f12976B6a93E84fC1"

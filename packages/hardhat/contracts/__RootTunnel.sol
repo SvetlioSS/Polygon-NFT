@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { FxBaseRootTunnel } from 'fx-portal-contracts/contracts/tunnel/FxBaseRootTunnel.sol';
+import './fx-portal/tunnel/FxBaseRootTunnel.sol';
 import './FxLimeGameItem.sol';
 
 /**
@@ -9,8 +9,7 @@ import './FxLimeGameItem.sol';
  */
 contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
-
-    bytes public latestData;
+    address private _rootTokenAddress;
 
     string public mockCommand;
     address public mockRootToken;
@@ -27,7 +26,13 @@ contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
         string uri
     );
 
-    constructor(address _checkpointManager, address _fxRoot) FxBaseRootTunnel(_checkpointManager, _fxRoot) {}
+    constructor(address _checkpointManager, address _fxRoot, address rootTokenAddress_) FxBaseRootTunnel(_checkpointManager, _fxRoot) {
+        _rootTokenAddress = rootTokenAddress_;
+    }
+
+    function processMessageFromChildMock(bytes memory message) public { 
+        _processMessageFromChild(message);
+    }
 
     function deposit(
         address rootToken,
@@ -46,8 +51,9 @@ contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
         emit FxDepositERC721(rootToken, msg.sender, user, tokenId, uri);
     }
     
-    function _processMessageFromChild(bytes memory data) internal override {
-        latestData = data;
+    function _processMessageFromChild(bytes memory message) internal override {
+        (address to, uint256 tokenId) = abi.decode(message, (address, uint256));
+        FxLimeGameItem(_rootTokenAddress).safeTransferFrom(address(this), to, tokenId);
     }
 
     function _sendMessageToChildMock(bytes memory message) internal {

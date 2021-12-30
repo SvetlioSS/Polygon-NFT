@@ -24,11 +24,12 @@ task('deploy-testnets', 'Deploys contract on a provided network').setAction(
         address
       );
     } else {
-      await deploy('FxLimeGameItem');
+      const address = await deploy('FxLimeGameItem');
       await deploy(
         'RootTunnel',
         process.env.GOERLI_CHECKPOINT_MANAGER_ADDRESS,
-        process.env.GOERLI_FXROOT_ADDRESS
+        process.env.GOERLI_FXROOT_ADDRESS,
+        address
       );
     }
   }
@@ -45,13 +46,9 @@ task('mint', 'Mints some NFTs on a provided network')
   });
 
 task('burn', 'Burns the minted tokens')
-  .addParam(
-    'address',
-    'The contract address which tokens will be burned'
-  )
   .setAction(async taskArgs => {
     const burn = require('./scripts/burn');
-    await burn(taskArgs.address);
+    await burn();
   });
 
 task('deposit', 'Deposits a token from Goerli to Mumbai')
@@ -93,11 +90,11 @@ module.exports = {
     hardhat: {},
     mumbai: {
       url: process.env.MUMBAI_ALCHEMY_URL,
-      accounts: [process.env.NFT_OWNER_PRIVATE_KEY],
+      accounts: [process.env.NFT_OWNER_PRIVATE_KEY]
     },
     goerli: {
       url: process.env.GOERLI_ALCHEMY_URL,
-      accounts: [process.env.NFT_OWNER_PRIVATE_KEY],
+      accounts: [process.env.NFT_OWNER_PRIVATE_KEY]
     },
   },
   etherscan: {

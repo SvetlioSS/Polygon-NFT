@@ -29,7 +29,7 @@ module.exports = async () => {
   //   );
 
   const rootTunnel = new hre.ethers.Contract(
-    '0x8344e70315420adC6D2f932653cE6572d4b6B2D8',
+    '0x7c0a941A23D89798996E1e2cD4c467C9D1A5A74d',
     RootTunnel.abi,
     wallet
   );

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { FxBaseChildTunnel } from 'fx-portal-contracts/contracts/tunnel/FxBaseChildTunnel.sol';
+import './fx-portal/tunnel/FxBaseChildTunnel.sol';
 import './FxLimeGameItem.sol';
 import "hardhat/console.sol";
 
@@ -17,8 +17,6 @@ contract __ChildTunnel is FxBaseChildTunnel {
         _childTokenAddress = childTokenAddress_;
     }
 
-    // ----- Mocks - Start -----
-
     function processMessageFromRootMock(
         uint256 stateId,
         address sender,
@@ -26,8 +24,6 @@ contract __ChildTunnel is FxBaseChildTunnel {
     ) public { 
         _processMessageFromRoot(stateId, sender, data);
     }
-
-    // ----- Mocks - End -----
 
     function withdraw(
         address childToken,

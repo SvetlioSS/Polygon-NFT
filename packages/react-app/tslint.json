@@ -10,7 +10,8 @@
     "jsx-no-lambda": false,
     "jsx-boolean-value": false,
     "no-console": false,
-    "no-debugger": false
+    "no-debugger": false,
+    "no-string-literal": false
   },
   "linterOptions": {
     "exclude": [

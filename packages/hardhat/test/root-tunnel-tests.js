@@ -23,7 +23,8 @@ describe('Root Tunnel', function () {
     );
     const rootTunnel = await rootTunnelFactory.deploy(
       randomAddress,
-      randomAddress
+      randomAddress,
+      fxLimeGameItem.address
     );
     rootTunnelContract = await rootTunnel.deployed();
     await rootTunnelContract.setFxChildTunnel(owner.address);
@@ -46,7 +47,7 @@ describe('Root Tunnel', function () {
     expect(await fxLimeGameItemContract.tokenURI(0)).to.equal('some.dummy.url');
   });
 
-  it('Should successfully deposit NFT', async function () {
+  it('Should successfully deposit', async function () {
     const tokenId = 0;
     const tokenURI = await fxLimeGameItemContract.tokenURI(tokenId);
 
@@ -64,5 +65,16 @@ describe('Root Tunnel', function () {
     expect(await rootTunnelContract.mockUser()).to.equal(addr1.address);
     expect(await rootTunnelContract.mockTokenId()).to.equal(tokenId);
     expect(await rootTunnelContract.mockUri()).to.equal(tokenURI);
+  });
+
+  it('Should successfully complete withdrawal', async function () {
+    const tokenId = 0;
+    const message = ethers.utils.defaultAbiCoder.encode(
+      ['address', 'uint256'],
+      [addr1.address, tokenId]
+    );
+    
+    await rootTunnelContract.processMessageFromChildMock(message);
+    expect(await fxLimeGameItemContract.ownerOf(tokenId)).to.equal(addr1.address);
   });
 });
