@@ -2,6 +2,7 @@ import supportedChains from './chains';
 import Noty from 'noty';
 import '../../../../node_modules/noty/lib/noty.css';
 import '../../../../node_modules/noty/lib/themes/mint.css';
+import { IPFS_GATEWAY } from '../constants';
 
 const NOTIFICATION_TIMEOUT = 3500;
 
@@ -139,4 +140,16 @@ export function showNotification(text: string) {
     timeout: NOTIFICATION_TIMEOUT,
     type: 'success',
   }).show();
+}
+
+export function isSupportedNetwork(network: string): boolean {
+  let supported = true;
+  if (network !== 'goerli' && network !== 'maticmum') {
+    supported = false;
+  }
+  return supported
+}
+
+export function toIpfsGatewayURI(uri: string): string {
+  return IPFS_GATEWAY + uri.slice('ipfs://'.length, uri.length);
 }

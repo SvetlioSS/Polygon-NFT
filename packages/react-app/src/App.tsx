@@ -10,7 +10,7 @@ import Header from './components/Header';
 import Loader from './components/Loader';
 import Button from './components/Button';
 import ConnectButton from './components/ConnectButton';
-import { POSClient, use, setProofApi } from "@maticnetwork/maticjs";
+import { POSClient, use, setProofApi } from '@maticnetwork/maticjs';
 import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
 
 import {
@@ -21,10 +21,13 @@ import {
   CHILD_TOKEN,
   CHILD_TUNNEL,
   CHILD_TUNNEL_ABI,
+  PROOF_API,
+  GOERLI_RPC_URL,
+  MUMBAI_RPC_URL,
 } from './constants';
 
 import { Web3Provider } from '@ethersproject/providers';
-import { getChainData } from './helpers/utilities';
+import { getChainData, isSupportedNetwork, toIpfsGatewayURI } from './helpers/utilities';
 import { getContract } from './helpers/ethers';
 
 use(Web3ClientPlugin);
@@ -64,14 +67,68 @@ const SBalances = styled(SLanding)`
   }
 `;
 
+const SHeader1 = styled.h1`
+  font-size: 30px;
+`;
+
+const SItemCollection = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const SNoItems = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SItemContent = styled.div`
+  height: 375px;
+  padding: 10px;
+  background-color: #f3f3f3;
+  border: 1px solid lightgrey;
+  border-radius: 10px;
+`;
+
+const SItemDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+`;
+
+const SItem = styled.div`
+  width: 350px;
+  margin: 20px;
+  padding: 10px;
+  & h2 {
+    font-size: 22px;
+  }
+`;
+
+const STokenURI = styled.div`
+  overflow-wrap: anywhere;
+  text-align: start;
+`;
+
+const STransferButton = styled(Button)`
+  align-self: center;
+  margin: 10px;
+`;
+
 interface IAppState {
   fetching: boolean;
   address: string;
   library: any;
   connected: boolean;
   chainId: number;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenTotalSupply: number | null,
   pendingRequest: boolean;
   result: any | null;
+  childTokenContract: any | null;
   rootTokenContract: any | null;
   rootTunnelContract: any | null;
   childTunnelContract: any | null;
@@ -79,6 +136,10 @@ interface IAppState {
   proof: any | null;
   posClient: any | null;
   burnTxHash: string;
+  collection: any;
+  loadingCollection: boolean;
+  collectionLoaded: boolean;
+  isSupportedNetwork: boolean;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -87,8 +148,12 @@ const INITIAL_STATE: IAppState = {
   library: null,
   connected: false,
   chainId: 1,
+  tokenName: '',
+  tokenSymbol: '',
+  tokenTotalSupply: null,
   pendingRequest: false,
   result: null,
+  childTokenContract: null,
   rootTokenContract: null,
   rootTunnelContract: null,
   childTunnelContract: null,
@@ -96,6 +161,10 @@ const INITIAL_STATE: IAppState = {
   proof: null,
   posClient: new POSClient(),
   burnTxHash: '',
+  collection: [],
+  loadingCollection: false,
+  collectionLoaded: false,
+  isSupportedNetwork: false,
 };
 
 class App extends React.Component<any, any> {
@@ -121,32 +190,69 @@ class App extends React.Component<any, any> {
     if (this.web3Modal.cachedProvider) {
       this.onConnect();
     }
-    setProofApi('https://apis.matic.network/');
+    setProofApi(PROOF_API);
   }
 
-  public setContracts(library: any, address: string) {
-    const rootTokenContract = getContract(
-      ROOT_TOKEN,
-      TOKEN_ABI.abi,
-      library,
-      address
-    );
+  public componentDidUpdate() {
+    if (
+      this.state.connected &&
+      this.state.isSupportedNetwork &&
+      !this.state.collectionLoaded &&
+      !this.state.loadingCollection
+    ) {
+      this.setState({ loadingCollection: true });
+      this.loadCollection();
+    }
+  }
 
-    const rootTunnelContract = getContract(
-      ROOT_TUNNEL,
-      ROOT_TUNNEL_ABI.abi,
-      library,
-      address
-    );
+  public async loadCollection() {
+    const contract = this.getNetwork() === 'goerli' ? this.state.rootTokenContract : this.state.childTokenContract;
+    const tokenName = await contract.name();
+    const tokenSymbol = await contract.symbol();
+    const tokenTotalSupply = await contract.totalSupply();
+    let collection: any[] = [];
 
-    const childTunnelContract = getContract(
-      CHILD_TUNNEL,
-      CHILD_TUNNEL_ABI.abi,
-      library,
-      address
-    );
+    const balance = await contract.balanceOf(this.state.address);
+
+    if (balance > 0) {
+      for (let i = 0; i < balance; i++) {
+        const tokenId = await contract.tokenOfOwnerByIndex(this.state.address, i);
+        const tokenURI = await contract.tokenURI(tokenId);
+        const tokenMetadataURI = toIpfsGatewayURI(tokenURI);
+        const metadata = await fetch(tokenMetadataURI).then(response => response.json());
+        const tokenImgURI = toIpfsGatewayURI(metadata.image);
+
+        collection.push({
+          tokenId,
+          tokenURI,
+          name: metadata.name,
+          description: metadata.description,
+          src: tokenImgURI,
+        });
+      }
+    }
 
     this.setState({
+      tokenName,
+      tokenSymbol,
+      tokenTotalSupply,
+      collection,
+      loadingCollection: false,
+      collectionLoaded: true,
+    });
+  }
+
+  public async setContracts(library: any, address: string) {
+    const childTokenContract = getContract(CHILD_TOKEN, TOKEN_ABI.abi, library, address);
+
+    const rootTokenContract = getContract(ROOT_TOKEN, TOKEN_ABI.abi, library, address);
+
+    const rootTunnelContract = getContract(ROOT_TUNNEL, ROOT_TUNNEL_ABI.abi, library, address);
+
+    const childTunnelContract = getContract(CHILD_TUNNEL, CHILD_TUNNEL_ABI.abi, library, address);
+
+    this.setState({
+      childTokenContract,
       rootTokenContract,
       rootTunnelContract,
       childTunnelContract,
@@ -155,20 +261,20 @@ class App extends React.Component<any, any> {
 
   public async initPoSClient(from: string) {
     await this.state.posClient.init({
-      network: "testnet",
-      version: "mumbai",
+      network: 'testnet',
+      version: 'mumbai',
       parent: {
-        provider: 'https://eth-goerli.alchemyapi.io/v2/kbgkxIOiGn6EE2p5JKCDUQ6XIuZ0S3Gb',
+        provider: GOERLI_RPC_URL,
         defaultConfig: {
-          from
-        }
+          from,
+        },
       },
       child: {
-        provider: 'https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzpLTwAw3fzd2l5J6i4',
+        provider: MUMBAI_RPC_URL,
         defaultConfig: {
-          from
-        }
-      }
+          from,
+        },
+      },
     });
   }
 
@@ -179,9 +285,7 @@ class App extends React.Component<any, any> {
 
     const network = await library.getNetwork();
 
-    const address = this.provider.selectedAddress
-      ? this.provider.selectedAddress
-      : this.provider?.accounts[0];
+    const address = this.provider.selectedAddress ? this.provider.selectedAddress : this.provider?.accounts[0];
 
     await this.initPoSClient(address);
 
@@ -192,19 +296,17 @@ class App extends React.Component<any, any> {
       chainId: network.chainId,
       address,
       connected: true,
+      isSupportedNetwork: isSupportedNetwork(network.name),
     });
 
     await this.subscribeToProviderEvents(this.provider);
   };
 
   public onDeposit = async () => {
-    const tokenId = 1;
+    const tokenId = 2;
     const tokenURI = await this.state.rootTokenContract.tokenURI(tokenId);
     console.log('Awaiting deposit approval...');
-    const transaction = await this.state.rootTokenContract.approve(
-      ROOT_TUNNEL,
-      tokenId
-    );
+    const transaction = await this.state.rootTokenContract.approve(ROOT_TUNNEL, tokenId);
     const transactionReceipt = await transaction.wait();
     if (transactionReceipt.status === 1) {
       console.log('Deposit approval successful!');
@@ -223,21 +325,24 @@ class App extends React.Component<any, any> {
   };
 
   public onWithdraw = async () => {
-    const tokenId = 1;
+    const tokenId = 0;
     console.log('Awaiting withdrawal...');
-    const transaction = await this.state.childTunnelContract.withdraw(
-      CHILD_TOKEN,
-      tokenId
-    );
+    const transaction = await this.state.childTunnelContract.withdraw(CHILD_TOKEN, tokenId);
     const transactionReceipt = await transaction.wait();
     this.setState({ burnTxHash: transactionReceipt.transactionHash });
     console.log(transactionReceipt.transactionHash);
     console.log('Withdrawal successful');
   };
 
+  public onCheckDepositResult = async () => {
+    const txHash = '0x0fd1d13d5bb1a741b64f4d050fe098eedff5c37cdfc714af8fbfe27b346bea32';
+    const message = 'Is Deposited: ' + (await this.state.posClient.isDeposited(txHash));
+    alert(message);
+  };
+
   public onClaim = async () => {
-    const txHash = '0x011ecc205086581515a3e8d72de31bf357a888c486d54878f0f699647e945877';
-                    
+    const txHash = '0x9abc2e344af7466550ce5f01e9128cb41510d14df65916ce5e8b81654ff4c0db';
+
     const isCheckpointed = await this.state.posClient.isCheckPointed(txHash);
 
     // const signature = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -269,14 +374,14 @@ class App extends React.Component<any, any> {
     //     txHash, // replace with txn hash of sendMessageToRoot
     //     "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036" // SEND_MESSAGE_EVENT_SIG, do not change
     //   )
-console.log(proof);
+    console.log(proof);
     // const proof = await this.state.posClient['rootChainManager']
     //   .customPayload(
     //     txHash, // replace with txn hash of sendMessageToRoot
     //     "0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036" // SEND_MESSAGE_EVENT_SIG, do not change
     //   );
     console.log('Claiming...');
-    await this.state.rootTunnelContract.receiveMessage(proof, { 
+    await this.state.rootTunnelContract.receiveMessage(proof, {
       gasLimit: 12e6,
       maxPriorityFeePerGas: 12e6,
       maxFeePerGas: 12e6,
@@ -323,7 +428,14 @@ console.log(proof);
     const network = await library.getNetwork();
     const chainId = network.chainId;
     this.setContracts(library, this.state.address);
-    await this.setState({ chainId, library });
+    await this.setState({
+      chainId,
+      library,
+      isSupportedNetwork: isSupportedNetwork(network.name),
+      collection: [],
+      loadingCollection: false,
+      collectionLoaded: false,
+    });
   };
 
   public close = async () => {
@@ -354,39 +466,66 @@ console.log(proof);
   };
 
   public render = () => {
-    const { address, connected, chainId, fetching } = this.state;
+    const {
+      address,
+      connected,
+      chainId,
+      tokenName,
+      tokenSymbol,
+      tokenTotalSupply,
+      collection,
+      isSupportedNetwork,
+      loadingCollection,
+    } = this.state;
     return (
       <SLayout>
         <Column maxWidth={1000} spanHeight>
-          <Header
-            connected={connected}
-            address={address}
-            chainId={chainId}
-            killSession={this.resetApp}
-          />
+          <Header connected={connected} address={address} chainId={chainId} killSession={this.resetApp} />
           <SContent>
-            {fetching ? (
-              <Column center>
+            {loadingCollection ? (
+              <Column center maxWidth={1000}>
                 <SContainer>
                   <Loader />
                 </SContainer>
               </Column>
+            ) : connected ? (
+              isSupportedNetwork ? (
+                <Column center maxWidth={1000}>
+                  <SHeader1>{`${tokenName} (${tokenSymbol}) Collection of NFTs you can transfer between Polygon Mumbai and Ethereum Goerli:`}</SHeader1>
+                  {tokenTotalSupply && <p>{`Total supply of tokens: ${tokenTotalSupply}`}</p>}
+                  {collection.length ? (
+                    <SItemCollection>
+                      {collection.map((item: any, index: number) => (
+                        <SItem key={'Item' + index}>
+                          <SItemContent>
+                            <img src={item.src} alt={item.name} />
+                            <h2>{item.name}</h2>
+                            <p>{item.description}</p>
+                          </SItemContent>
+                          <SItemDetails>
+                            <div>{'Token ID: ' + item.tokenId}</div>
+                            <STokenURI>{'Token URI: ' + item.tokenURI}</STokenURI>
+                            <STransferButton>{'Transfer'}</STransferButton>
+                          </SItemDetails>
+                        </SItem>
+                      ))}
+                    </SItemCollection>
+                  ) : (
+                    <SNoItems>{'There are no items in your collection'}</SNoItems>
+                  )}
+                  {/* <Button onClick={this.onDeposit}>{'Deposit (Goerli)'}</Button>
+                      <Button onClick={this.onWithdraw}>
+                        {'Withdraw (Mumbai)'}
+                      </Button>
+                      <Button onClick={this.onClaim}>{'Claim (Goerli)'}</Button>
+                      <Button onClick={this.onCheckDepositResult}>{'Check Deposit result'}</Button> */}
+                </Column>
+              ) : (
+                <div>{'Unsupported Network! Please connect to Polygon Mumbai or Ethereum Goerli'}</div>
+              )
             ) : (
               <SLanding center>
-                {!this.state.connected && (
-                  <ConnectButton onClick={this.onConnect} />
-                )}
-                {this.state.connected && (
-                  <Button onClick={this.onDeposit}>{'Deposit (Goerli)'}</Button>
-                )}
-                {this.state.connected && (
-                  <Button onClick={this.onWithdraw}>
-                    {'Withdraw (Mumbai)'}
-                  </Button>
-                )}
-                {this.state.connected && (
-                  <Button onClick={this.onClaim}>{'Claim (Goerli)'}</Button>
-                )}
+                <ConnectButton onClick={this.onConnect} />
               </SLanding>
             )}
           </SContent>

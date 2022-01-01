@@ -53,6 +53,6 @@ contract ChildTunnel is FxBaseChildTunnel {
         childTokenContract.burn(tokenId);
 
         // send message to root regarding token burn
-        _sendMessageToRoot(abi.encode(childToken, tokenId));
+        _sendMessageToRoot(abi.encode(msg.sender, tokenId));
     }
 }
