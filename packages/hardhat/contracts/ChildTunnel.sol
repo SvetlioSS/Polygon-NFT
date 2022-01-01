@@ -30,13 +30,13 @@ contract ChildTunnel is FxBaseChildTunnel {
     ) internal override validateSender(sender) {
         (bytes32 syncType, bytes memory syncData) = abi.decode(data, (bytes32, bytes));
         if (syncType == DEPOSIT) {
-            (, , address to, , string memory uri) = abi.decode(
+            (, , address to, uint256 tokenId, string memory uri) = abi.decode(
                 syncData,
                 (address, address, address, uint256, string)
             );
 
             FxLimeGameItem childTokenContract = FxLimeGameItem(_childTokenAddress);
-            childTokenContract.mint(to, uri);
+            childTokenContract.mint(to, uri, tokenId);
         } else {
             revert("FxLimeGameItemChildTunnel: INVALID_SYNC_TYPE");
         }

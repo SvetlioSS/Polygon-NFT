@@ -37,6 +37,14 @@ contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         emit TokenMinted(to, uri, tokenId);
     }
 
+    function mint(address to, string memory uri, uint256 tokenId) public {
+        require(msg.sender == _fxManager, "Invalid sender");
+
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, uri);
+        emit TokenMinted(to, uri, tokenId);
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,
