@@ -110,7 +110,7 @@ const Button = (props: IButtonProps) => (
   <SButton {...props}>
     <SHoverLayer />
     <SIcon />
-    {props.fetching ? <Loader size={20} color="white" /> : props.children}
+    {props.fetching ? <Loader /> : props.children}
   </SButton>
 );
 
@@ -118,7 +118,7 @@ Button.defaultProps = {
   fetching: false,
   outline: false,
   type: 'button',
-  color: 'lightBlue',
+  color: 'blue',
   disabled: false,
   icon: null,
   left: false,

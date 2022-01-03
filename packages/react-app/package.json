@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.7.1",
-    "@emotion/styled": "^11.6.0",
     "@ethersproject/address": "^5.0.8",
     "@ethersproject/bignumber": "^5.0.12",
     "@ethersproject/constants": "^5.0.7",
@@ -13,9 +11,6 @@
     "@ethersproject/providers": "^5.0.17",
     "@maticnetwork/maticjs": "^3.1.0",
     "@maticnetwork/maticjs-web3": "^1.0.0",
-    "@mui/material": "^5.2.6",
-    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
-    "@mui/styled-engine-sc": "^5.1.0",
     "@toruslabs/torus-embed": "^1.8.1",
     "@walletconnect/web3-provider": "^1.2.2",
     "authereum": "0.0.4-beta.201",
@@ -28,8 +23,8 @@
     "fortmatic": "^0.8.2",
     "noty": "^3.2.0-beta",
     "prop-types": "^15.7.2",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-scripts-ts": "^4.0.8",
     "styled-components": "^5.3.3",
     "web3": "^1.3.0",
@@ -57,8 +52,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "resolutions": {
-    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
-  }
+  ]
 }
