@@ -10,7 +10,7 @@ import Header from './components/Header';
 import Loader from './components/Loader';
 import Button from './components/Button';
 import ConnectButton from './components/ConnectButton';
-import DepositFlow from './components/DepositFlow';
+import TransferFlow from './components/TransferFlow';
 import WithdrawFlow from './components/WithdrawFlow';
 import { POSClient, use, setProofApi } from '@maticnetwork/maticjs';
 import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
@@ -421,7 +421,7 @@ class App extends React.Component<any, any> {
     provider.off('close', this.close);
   }
 
-  public onDepositFlowClose = (refresh: boolean) => {
+  public onTransferFlowClose = (refresh: boolean) => {
     this.setState({ 
       depositTokenId: null,
       depositTokenURI: null,
@@ -543,8 +543,8 @@ class App extends React.Component<any, any> {
                       </Column>
                     )}
                     {depositTokenId && (
-                      <DepositFlow
-                        onCancel={this.onDepositFlowClose}
+                      <TransferFlow
+                        onCancel={this.onTransferFlowClose}
                         address={address}
                         rootTokenContract={rootTokenContract}
                         rootTunnelContract={rootTunnelContract}

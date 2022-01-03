@@ -176,13 +176,13 @@ interface ITransaction {
   hash: string;
 }
 
-interface IDepositFlowState {
+interface ITransferFlowState {
   transferState: TransferState;
   transactions: ITransaction[];
   showTransactions: boolean;
 }
 
-interface IDepositFlowProps {
+interface ITransferFlowProps {
   onCancel: (refresh: boolean) => void;
   address: string;
   rootTokenContract: any;
@@ -192,13 +192,13 @@ interface IDepositFlowProps {
   tokenURI: string;
 }
 
-const INITIAL_STATE: IDepositFlowState = {
+const INITIAL_STATE: ITransferFlowState = {
   transferState: TransferState.PendingUserConfirmation,
   transactions: [],
   showTransactions: false,
 };
 
-class DepositFlow extends React.Component<IDepositFlowProps, IDepositFlowState> {
+class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowState> {
 
   constructor(props: any) {
     super(props);
@@ -349,4 +349,4 @@ class DepositFlow extends React.Component<IDepositFlowProps, IDepositFlowState> 
   };
 }
 
-export default DepositFlow;
+export default TransferFlow;
