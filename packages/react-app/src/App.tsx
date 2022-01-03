@@ -422,7 +422,7 @@ class App extends React.Component<any, any> {
   }
 
   public onTransferFlowClose = (refresh: boolean) => {
-    this.setState({ 
+    this.setState({
       transferTokenId: null,
       transferTokenURI: null,
       transferType: null,
@@ -514,7 +514,7 @@ class App extends React.Component<any, any> {
               ) : connected ? (
                 isSupportedNetwork ? (
                   <>
-                    {!transferTokenId && (
+                    {transferTokenId === null && (
                       <Column center maxWidth={1600}>
                         <SHeader1>{`${tokenName} (${tokenSymbol}) Collection of NFTs`}</SHeader1>
                         <SHeader2>{'You can transfer them between Polygon Mumbai and Ethereum Goerli'}</SHeader2>
@@ -543,7 +543,7 @@ class App extends React.Component<any, any> {
                         )}
                       </Column>
                     )}
-                    {transferTokenId && (
+                    {transferTokenId !== null && (
                       <TransferFlow
                         onCancel={this.onTransferFlowClose}
                         address={address}
