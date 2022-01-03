@@ -35,10 +35,7 @@ describe('Root Tunnel', function () {
   });
 
   it('Should successfully mint a token when called by owner', async function () {
-    const mintResultsTx = await fxLimeGameItemContract.mint(
-      addr1.address,
-      'some.dummy.url'
-    );
+    const mintResultsTx = await fxLimeGameItemContract['mint(address,string)'](addr1.address, 'some.dummy.url');
     await mintResultsTx.wait();
     expect(await fxLimeGameItemContract.totalSupply()).to.equal(1);
   });
