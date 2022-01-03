@@ -4,6 +4,7 @@ import Loader from './Loader';
 import Button from './Button';
 import ProgressIndicator from './ProgressIndicator';
 import TransferState from '../enums/TransferState';
+import TransferType from '../enums/TransferType';
 import EthereumLogo from '../assets/eth.svg';
 import PolygonLogo from '../assets/polygon.svg';
 import { ROOT_TUNNEL, ROOT_TOKEN } from '../constants';
@@ -190,6 +191,7 @@ interface ITransferFlowProps {
   symbol: string;
   tokenId: number;
   tokenURI: string;
+  type: TransferType;
 }
 
 const INITIAL_STATE: ITransferFlowState = {

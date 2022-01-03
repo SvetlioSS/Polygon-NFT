@@ -10,8 +10,8 @@ import Header from './components/Header';
 import Loader from './components/Loader';
 import Button from './components/Button';
 import ConnectButton from './components/ConnectButton';
+import TransferType from './enums/TransferType';
 import TransferFlow from './components/TransferFlow';
-import WithdrawFlow from './components/WithdrawFlow';
 import { POSClient, use, setProofApi } from '@maticnetwork/maticjs';
 import { Web3ClientPlugin } from '@maticnetwork/maticjs-web3';
 
@@ -150,9 +150,9 @@ interface IAppState {
   loadingCollection: boolean;
   collectionLoaded: boolean;
   isSupportedNetwork: boolean;
-  depositTokenId: number | null;
-  depositTokenURI: string | null;
-  withdrawTokenId: number | null;
+  transferTokenId: number | null;
+  transferTokenURI: string | null;
+  transferType: TransferType | null;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -178,9 +178,9 @@ const INITIAL_STATE: IAppState = {
   loadingCollection: false,
   collectionLoaded: false,
   isSupportedNetwork: false,
-  depositTokenId: null,
-  depositTokenURI: null,
-  withdrawTokenId: null,
+  transferTokenId: null,
+  transferTokenURI: null,
+  transferType: null,
 };
 
 class App extends React.Component<any, any> {
@@ -319,16 +319,16 @@ class App extends React.Component<any, any> {
 
   public onTransfer = async (tokenId: number, tokenURI: string) => {
     const network = this.getNetwork();
-    if (network === 'goerli') {
-      this.setState({
-        depositTokenId: tokenId,
-        depositTokenURI: tokenURI,
-      });
-    } else if (network === 'maticmum') {
-      // this.onWithdraw(tokenId);
-    } else {
+    if (network !== 'goerli' && network !== 'maticmum') {
       console.error('Unsupported network!');
+      return;
     }
+
+    this.setState({
+      transferTokenId: tokenId,
+      transferTokenURI: tokenURI,
+      transferType: network === 'goerli' ? TransferType.Deposit : TransferType.Withdraw,
+    });
   };
 
   public onWithdraw = async () => {
@@ -423,8 +423,9 @@ class App extends React.Component<any, any> {
 
   public onTransferFlowClose = (refresh: boolean) => {
     this.setState({ 
-      depositTokenId: null,
-      depositTokenURI: null,
+      transferTokenId: null,
+      transferTokenURI: null,
+      transferType: null,
       collectionLoaded: !refresh,
     });
   };
@@ -493,9 +494,9 @@ class App extends React.Component<any, any> {
       collection,
       isSupportedNetwork,
       loadingCollection,
-      depositTokenId,
-      depositTokenURI,
-      withdrawTokenId,
+      transferTokenId,
+      transferTokenURI,
+      transferType,
     } = this.state;
 
     return (
@@ -513,7 +514,7 @@ class App extends React.Component<any, any> {
               ) : connected ? (
                 isSupportedNetwork ? (
                   <>
-                    {!depositTokenId && !withdrawTokenId && (
+                    {!transferTokenId && (
                       <Column center maxWidth={1600}>
                         <SHeader1>{`${tokenName} (${tokenSymbol}) Collection of NFTs`}</SHeader1>
                         <SHeader2>{'You can transfer them between Polygon Mumbai and Ethereum Goerli'}</SHeader2>
@@ -542,18 +543,18 @@ class App extends React.Component<any, any> {
                         )}
                       </Column>
                     )}
-                    {depositTokenId && (
+                    {transferTokenId && (
                       <TransferFlow
                         onCancel={this.onTransferFlowClose}
                         address={address}
                         rootTokenContract={rootTokenContract}
                         rootTunnelContract={rootTunnelContract}
                         symbol={tokenSymbol}
-                        tokenId={depositTokenId}
-                        tokenURI={depositTokenURI as string}
+                        tokenId={transferTokenId}
+                        tokenURI={transferTokenURI as string}
+                        type={transferType as TransferType}
                       />
                     )}
-                    {withdrawTokenId && <WithdrawFlow />}
                   </>
                 ) : (
                   <div>{'Unsupported Network! Please connect to Polygon Mumbai or Ethereum Goerli'}</div>
