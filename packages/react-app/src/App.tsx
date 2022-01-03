@@ -73,9 +73,15 @@ const SHeader1 = styled.h1`
   font-size: 30px;
 `;
 
+const SHeader2 = styled.h2`
+  font-size: 22px;
+  margin: 0;
+`;
+
 const SItemCollection = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 `;
 
 const SNoItems = styled.div`
@@ -106,8 +112,8 @@ const SItem = styled.div`
   width: 350px;
   margin: 20px;
   padding: 10px;
-  & h2 {
-    font-size: 22px;
+  & h3 {
+    font-size: 20px;
   }
 `;
 
@@ -495,7 +501,7 @@ class App extends React.Component<any, any> {
     return (
       <>
         <SLayout>
-          <Column maxWidth={1000} spanHeight>
+          <Column maxWidth={1300} spanHeight>
             <Header connected={connected} address={address} chainId={chainId} killSession={this.resetApp} />
             <SContent>
               {loadingCollection ? (
@@ -508,8 +514,9 @@ class App extends React.Component<any, any> {
                 isSupportedNetwork ? (
                   <>
                     {!depositTokenId && !withdrawTokenId && (
-                      <Column center maxWidth={1000}>
-                        <SHeader1>{`${tokenName} (${tokenSymbol}) Collection of NFTs you can transfer between Polygon Mumbai and Ethereum Goerli:`}</SHeader1>
+                      <Column center maxWidth={1600}>
+                        <SHeader1>{`${tokenName} (${tokenSymbol}) Collection of NFTs`}</SHeader1>
+                        <SHeader2>{'You can transfer them between Polygon Mumbai and Ethereum Goerli'}</SHeader2>
                         {tokenTotalSupply && <p>{`Total supply of tokens: ${tokenTotalSupply}`}</p>}
                         {collection.length ? (
                           <SItemCollection>
@@ -517,7 +524,7 @@ class App extends React.Component<any, any> {
                               <SItem key={'Item' + index}>
                                 <SItemContent>
                                   <img src={item.src} alt={item.name} />
-                                  <h2>{item.name}</h2>
+                                  <h3>{item.name}</h3>
                                   <p>{item.description}</p>
                                 </SItemContent>
                                 <SItemDetails>
