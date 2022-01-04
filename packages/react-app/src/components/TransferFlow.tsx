@@ -182,7 +182,7 @@ const STransaction = styled.div`
   }
 `;
 
-const debug = true;
+const debug = false;
 
 interface ITransaction {
   status: string;
