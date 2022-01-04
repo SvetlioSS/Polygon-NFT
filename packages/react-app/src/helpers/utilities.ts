@@ -153,3 +153,43 @@ export function isSupportedNetwork(network: string): boolean {
 export function toIpfsGatewayURI(uri: string): string {
   return IPFS_GATEWAY + uri.slice('ipfs://'.length, uri.length);
 }
+
+export function getMockTransaction(status: number) {
+  return new Promise<{ hash: string; wait: () => Promise<{ status: number }> }>(resolve => {
+    const receiptMock = {
+      status,
+    };
+    const transactionMock: { hash: string; wait: () => Promise<{ status: number }> } = {
+      hash: '0xc4548819a98875b96e879931760aeced06244e72ebecf8cfa8c33300347024f9',
+      wait: () => {
+        return new Promise<{ status: number }>(innerResolve => {
+          setTimeout(() => {
+            innerResolve(receiptMock);
+          }, 5000);
+        });
+      },
+    };
+
+    setTimeout(() => {
+      resolve(transactionMock);
+    }, 5000);
+  });
+};
+
+export function getMockBurnProof() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(
+        '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000042307863343534383831396139383837356239366538373939333137363061656365643036323434653732656265636638636661386333333330303334373032346639000000000000000000000000000000000000000000000000000000000000'
+      );
+    }, 5000);
+  });
+};
+
+export function getMockCheckpointResult(result: boolean) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(result);
+    }, 3000);
+  });
+};

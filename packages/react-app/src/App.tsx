@@ -214,7 +214,8 @@ class App extends React.Component<any, any> {
       this.state.connected &&
       this.state.isSupportedNetwork &&
       !this.state.collectionLoaded &&
-      !this.state.loadingCollection
+      !this.state.loadingCollection &&
+      !this.state.transferTokenId
     ) {
       this.setState({ loadingCollection: true });
       this.loadCollection();
@@ -319,7 +320,7 @@ class App extends React.Component<any, any> {
 
   public onTransfer = async (tokenId: number, tokenURI: string) => {
     const network = this.getNetwork();
-    if (network !== 'goerli' && network !== 'maticmum') {
+    if (network !== 'goerli' && network !== 'mumbai') {
       console.error('Unsupported network!');
       return;
     }
@@ -489,6 +490,7 @@ class App extends React.Component<any, any> {
       tokenName,
       tokenSymbol,
       tokenTotalSupply,
+      childTunnelContract,
       rootTokenContract,
       rootTunnelContract,
       collection,
@@ -497,6 +499,7 @@ class App extends React.Component<any, any> {
       transferTokenId,
       transferTokenURI,
       transferType,
+      posClient,
     } = this.state;
 
     return (
@@ -549,10 +552,13 @@ class App extends React.Component<any, any> {
                         address={address}
                         rootTokenContract={rootTokenContract}
                         rootTunnelContract={rootTunnelContract}
+                        childTunnelContract={childTunnelContract}
                         symbol={tokenSymbol}
                         tokenId={transferTokenId}
                         tokenURI={transferTokenURI as string}
                         type={transferType as TransferType}
+                        posClient={posClient}
+                        getNetwork={this.getNetwork}
                       />
                     )}
                   </>

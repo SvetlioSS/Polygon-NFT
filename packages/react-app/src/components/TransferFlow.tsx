@@ -7,8 +7,21 @@ import TransferState from '../enums/TransferState';
 import TransferType from '../enums/TransferType';
 import EthereumLogo from '../assets/eth.svg';
 import PolygonLogo from '../assets/polygon.svg';
-import { ROOT_TUNNEL, ROOT_TOKEN } from '../constants';
-import { ellipseAddress } from '../helpers/utilities';
+import {
+  ROOT_TUNNEL,
+  ROOT_TOKEN,
+  CHILD_TOKEN,
+  MUMBAI_POLYGONSCAN_URL,
+  GOERLI_ETHEREUMSCAN_URL,
+  SEND_MESSAGE_EVENT_SIG,
+} from '../constants';
+import {
+  ellipseAddress,
+  showNotification,
+  getMockTransaction,
+  getMockBurnProof,
+  getMockCheckpointResult,
+} from '../helpers/utilities';
 
 const SFlowWrapper = styled.div`
   display: flex;
@@ -110,15 +123,12 @@ const STransferDirection = styled.div`
     justify-content: center;
     align-items: center;
   }
+`;
+
+const SLogo = styled.div<{ eth?: boolean }>`
   & img {
     max-width: 40px;
-  }
-  & div:first-of-type {
-    margin-right: 10px;
-
-    & img {
-      margin-right: 6px;
-    }
+    ${({ eth }) => (eth ? 'margin-right: 6px;' : 'margin-left: -8px;')}
   }
 `;
 
@@ -172,6 +182,8 @@ const STransaction = styled.div`
   }
 `;
 
+const debug = true;
+
 interface ITransaction {
   status: string;
   hash: string;
@@ -181,6 +193,8 @@ interface ITransferFlowState {
   transferState: TransferState;
   transactions: ITransaction[];
   showTransactions: boolean;
+  burnTxHash: string | null;
+  verifyingCheckpoint: boolean;
 }
 
 interface ITransferFlowProps {
@@ -188,20 +202,24 @@ interface ITransferFlowProps {
   address: string;
   rootTokenContract: any;
   rootTunnelContract: any;
+  childTunnelContract: any;
+  posClient: any;
   symbol: string;
   tokenId: number;
   tokenURI: string;
   type: TransferType;
+  getNetwork: () => string;
 }
 
 const INITIAL_STATE: ITransferFlowState = {
   transferState: TransferState.PendingUserConfirmation,
   transactions: [],
   showTransactions: false,
+  burnTxHash: null,
+  verifyingCheckpoint: false,
 };
 
 class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowState> {
-
   constructor(props: any) {
     super(props);
     this.state = {
@@ -220,17 +238,26 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
   };
 
   public onConfirm = async () => {
+    if (this.props.type === TransferType.Deposit) {
+      this.onDepositConfirm();
+    } else {
+      this.onWithdrawConfirm();
+    }
+  };
+
+  public onDepositConfirm = async () => {
     const { tokenId, tokenURI, rootTokenContract, rootTunnelContract, address } = this.props;
 
     this.setState({ transferState: TransferState.PendingApproval });
 
-    const approveTransaction = await rootTokenContract.approve(ROOT_TUNNEL, tokenId);
+    const approveTransaction = debug
+      ? await getMockTransaction(1)
+      : await rootTokenContract.approve(ROOT_TUNNEL, tokenId);
 
     this.updateTransaction(0, {
       hash: approveTransaction.hash,
       status: 'Pending',
     });
-    this.setState({ transferState: TransferState.PendingApproval });
 
     const approveTransactionReceipt = await approveTransaction.wait();
 
@@ -238,7 +265,9 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
       this.updateTransaction(0, { status: 'Success' });
       this.setState({ transferState: TransferState.Approved });
 
-      const depositTransaction = await rootTunnelContract.deposit(ROOT_TOKEN, address, tokenId, tokenURI);
+      const depositTransaction = debug
+        ? await getMockTransaction(1)
+        : await rootTunnelContract.deposit(ROOT_TOKEN, address, tokenId, tokenURI);
       this.updateTransaction(1, {
         hash: depositTransaction.hash,
         status: 'Pending',
@@ -252,11 +281,85 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
       } else {
         this.updateTransaction(1, { status: 'Failed' });
         this.setState({ transferState: TransferState.Confirmed });
-        alert('There was an error with your Deposit transaction!');
+        showNotification('There was an error with your Deposit transaction!');
       }
     } else {
       this.updateTransaction(0, { status: 'Failed' });
-      alert('There was an error with your Approval transaction!');
+      showNotification('There was an error with your Approval transaction!');
+    }
+  };
+
+  public onWithdrawConfirm = async () => {
+    const { tokenId, childTunnelContract } = this.props;
+
+    this.setState({ transferState: TransferState.PendingApproval });
+
+    const transaction = debug ? await getMockTransaction(1) : await childTunnelContract.withdraw(CHILD_TOKEN, tokenId);
+
+    this.updateTransaction(0, {
+      hash: transaction.hash,
+      status: 'Pending',
+    });
+
+    const transactionReceipt = await transaction.wait();
+
+    if (transactionReceipt.status === 1) {
+      this.updateTransaction(0, { status: 'Success' });
+      this.setState({
+        transferState: TransferState.Approved,
+        burnTxHash: transaction.hash,
+      });
+    } else {
+      this.updateTransaction(0, { status: 'Failed' });
+      showNotification('There was an error with your Withdrawal transaction!');
+    }
+  };
+
+  public onVerifyCheckpoint = async () => {
+    this.setState({ verifyingCheckpoint: true });
+
+    const isCheckpointed = debug
+      ? await getMockCheckpointResult(true)
+      : await this.props.posClient.isCheckPointed(this.state.burnTxHash);
+
+    this.setState({ verifyingCheckpoint: false });
+
+    if (isCheckpointed) {
+      this.setState({ transferState: TransferState.PendingConfirmation });
+    } else {
+      showNotification('The transaction is not checkpointed yet!');
+    }
+  };
+
+  public onClaim = async () => {
+    this.setState({ transferState: TransferState.Confirmed });
+
+    const proof = debug
+      ? await getMockBurnProof()
+      : await this.props.posClient.exitUtil.buildPayloadForExit(this.state.burnTxHash, SEND_MESSAGE_EVENT_SIG, true);
+
+    const transaction = debug
+      ? await getMockTransaction(1)
+      : await this.props.rootTunnelContract.receiveMessage(proof, {
+          gasLimit: 12e6,
+          maxPriorityFeePerGas: 12e6,
+          maxFeePerGas: 12e6,
+        });
+
+    this.updateTransaction(1, {
+      hash: transaction.hash,
+      status: 'Pending',
+    });
+
+    const transactionReceipt = await transaction.wait();
+
+    if (transactionReceipt.status === 1) {
+      this.updateTransaction(1, { status: 'Success' });
+      this.setState({ transferState: TransferState.Completed });
+      showNotification('Transfer successful!');
+    } else {
+      this.updateTransaction(1, { status: 'Failed' });
+      showNotification('There was an error with your Receive transaction!');
     }
   };
 
@@ -265,7 +368,54 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
   };
 
   public render = () => {
-    const { transferState, showTransactions, transactions } = this.state;
+    const { transferState, showTransactions, transactions, verifyingCheckpoint } = this.state;
+    const { type, tokenId, symbol } = this.props;
+
+    const ethereumLogo = (
+      <SLogo eth={true}>
+        <img src={EthereumLogo} />
+        <span>{'Ethereum (Goerli)'}</span>
+      </SLogo>
+    );
+    const polygonLogo = (
+      <SLogo>
+        <img src={PolygonLogo} />
+        <span>{'Polygon (Mumbai)'}</span>
+      </SLogo>
+    );
+
+    let progressInformation = '';
+    if (type === TransferType.Deposit) {
+      if (transferState === TransferState.Confirmed) {
+        progressInformation =
+          'Your transfer is en-route. It will take ~10-15 minutes for the deposit to get completed. On completion, your balance will be updated.';
+      } else {
+        progressInformation =
+          'Ethereum transactions can take longer time to complete based upon network congestion. Please wait or increase the gas price of the transaction.';
+      }
+    } else {
+      if (transferState === TransferState.Approved) {
+        progressInformation =
+          'Please wait until matic checkpoint arrive with your previous transaction. Checkpointing takes ~1 hour.';
+      } else if (transferState === TransferState.PendingConfirmation) {
+        progressInformation = 'Your token is now ready to claim on Ethereum Goerli.';
+      } else {
+        progressInformation = 'Your transaction will be confirmed in a few seconds.';
+      }
+    }
+
+    let header2Text = '';
+    if (type === TransferType.Deposit) {
+      header2Text = 'Transaction in process';
+    } else {
+      if (transferState === TransferState.Approved) {
+        header2Text = 'Waiting for Checkpoint';
+      } else if (transferState === TransferState.PendingConfirmation) {
+        header2Text = 'Checkpoint Reached';
+      } else {
+        header2Text = 'Transaction in process';
+      }
+    }
 
     return (
       <SFlowWrapper>
@@ -273,39 +423,40 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
           {transferState === TransferState.PendingUserConfirmation && 'Transfer Confirmation'}
           {(transferState === TransferState.PendingApproval || transferState === TransferState.Approved) &&
             'Transfer in Progress'}
-          {transferState === TransferState.Confirmed && 'Transfer en route'}
+          {type === TransferType.Deposit && transferState === TransferState.Confirmed && 'Transfer en route'}
+          {type === TransferType.Withdraw && transferState === TransferState.PendingConfirmation && 'Transfer in Progress'}
+          {type === TransferType.Withdraw && transferState === TransferState.Confirmed && 'Claiming token'}
+          {type === TransferType.Withdraw && transferState === TransferState.Completed && 'Completed'}
         </SHeader1>
         <STransferDirection>
-          <div>
-            <img src={EthereumLogo} />
-            <span>{'Ethereum (Goerli)'}</span>
-          </div>
+          {type === TransferType.Deposit ? ethereumLogo : polygonLogo}
           <div>
             <SArrowLine />
             <SArrowTip />
           </div>
-          <div>
-            <img src={PolygonLogo} />
-            <span>{'Polygon (Mumbai)'}</span>
-          </div>
+          {type === TransferType.Deposit ? polygonLogo : ethereumLogo}
         </STransferDirection>
         <SSeparator />
         <STransferDetails>
           <STokenDetails>
             <div>{'Token ID'}</div>
-            <div>{this.props.tokenId}</div>
+            <div>{tokenId}</div>
           </STokenDetails>
           <STokenDetails>
             <div>{'Transfer Amount'}</div>
-            <div>{`1 ${this.props.symbol}`}</div>
+            <div>{`1 ${symbol}`}</div>
           </STokenDetails>
         </STransferDetails>
         <SSeparator />
-        <ProgressIndicator transferState={transferState} />
+        <ProgressIndicator transferState={transferState} transferType={type} />
         {transferState === TransferState.PendingUserConfirmation ? (
           <SDetailsWrapper>
-            <SDetailsText>{'Are you sure you wish to transfer your token to Polygon Mumbai?'}</SDetailsText>
-            <SDetailsTextSmall>{'Approximate transfer time ~15 minutes.'}</SDetailsTextSmall>
+            <SDetailsText>{`Are you sure you wish to transfer your token to ${
+              type === TransferType.Deposit ? 'Polygon Mumbai' : 'Ethereum Goerli'
+            }?`}</SDetailsText>
+            <SDetailsTextSmall>{`Approximate transfer time ~${
+              type === TransferType.Deposit ? '15 minutes' : '1 hour'
+            }.`}</SDetailsTextSmall>
             <SButtonWrapper>
               <Button onClick={() => this.onConfirm()}>{'Confirm'}</Button>
               <Button onClick={() => this.onCancel(false)}>{'Cancel'}</Button>
@@ -313,18 +464,49 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
           </SDetailsWrapper>
         ) : (
           <SDetailsWrapper>
-            {transferState !== TransferState.Confirmed && (
+            {type === TransferType.Deposit && transferState !== TransferState.Confirmed && (
               <SLoaderContainer>
                 <Loader />
               </SLoaderContainer>
             )}
-            {transferState !== TransferState.Confirmed && <SHeader2>{'Transaction in process'}</SHeader2>}
-            <SProgressInformation margin={transferState === TransferState.Confirmed}>
-              {transferState === TransferState.Confirmed
-                ? 'Your transfer is en-route. It will take ~10-15 minutes for the deposit to get completed. On completion, your balance will be updated.'
-                : 'Ethereum transactions can take longer time to complete based upon network congestion. Please wait or increase the gas price of the transaction.'}
-            </SProgressInformation>
-            {transferState === TransferState.Confirmed && (
+            {type === TransferType.Withdraw &&
+              (transferState < TransferState.Approved || transferState === TransferState.Confirmed) && (
+                <SLoaderContainer>
+                  <Loader />
+                </SLoaderContainer>
+              )}
+            {transferState < TransferState.Confirmed && <SHeader2>{header2Text}</SHeader2>}
+            {transferState !== TransferState.Completed && (
+              <SProgressInformation margin={transferState === TransferState.Confirmed}>
+                {progressInformation}
+              </SProgressInformation>
+            )}
+            {transferState === TransferState.Approved && type === TransferType.Withdraw && (
+              <>
+                <SProgressInformation margin={true}>
+                  {'To refresh checkpoint status, click Refresh.'}
+                </SProgressInformation>
+                <SButtonWrapper>
+                  <Button onClick={() => this.onVerifyCheckpoint()} disabled={verifyingCheckpoint}>
+                    {'Refresh'}
+                  </Button>
+                </SButtonWrapper>
+              </>
+            )}
+            {type === TransferType.Withdraw && transferState === TransferState.PendingConfirmation && (
+              <>
+                {this.props.getNetwork() === 'mumbai' && (
+                  <SProgressInformation margin={true}>{'Please switch your network.'}</SProgressInformation>
+                )}
+                <SButtonWrapper>
+                  <Button onClick={() => this.onClaim()} disabled={this.props.getNetwork() === 'mumbai'}>
+                    {'Claim'}
+                  </Button>
+                </SButtonWrapper>
+              </>
+            )}
+            {((type === TransferType.Deposit && transferState === TransferState.Confirmed) ||
+              (type === TransferType.Withdraw && transferState === TransferState.Completed)) && (
               <SButtonWrapper>
                 <Button onClick={() => this.onCancel(true)}>{'Go to your Collection'}</Button>
               </SButtonWrapper>
@@ -335,12 +517,21 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
               </div>
               {showTransactions && (
                 <div>
-                  {transactions.map((t, index) => 
+                  {transactions.map((t, index) => (
                     <STransaction key={`Transaction${index}`}>
-                      <div><a href={`https://goerli.etherscan.io/tx/${t.hash}`} target='_blank'>{ellipseAddress(t.hash, 10)}</a></div>
+                      <div>
+                        <a
+                          href={`${type === TransferType.Deposit ? GOERLI_ETHEREUMSCAN_URL : MUMBAI_POLYGONSCAN_URL}${
+                            t.hash
+                          }`}
+                          target="_blank"
+                        >
+                          {ellipseAddress(t.hash, 10)}
+                        </a>
+                      </div>
                       <div>{t.status}</div>
                     </STransaction>
-                  )}
+                  ))}
                 </div>
               )}
             </STransactionLog>

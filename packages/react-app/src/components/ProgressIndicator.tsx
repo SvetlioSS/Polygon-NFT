@@ -1,4 +1,5 @@
 import * as React from 'react';
+import TransferType from 'src/enums/TransferType';
 import styled from 'styled-components';
 import CheckmarkIcon from '../assets/check-solid.svg';
 import TransferState from '../enums/TransferState';
@@ -76,6 +77,7 @@ const SLine = styled.span<{ type: LineType }>`
 
 interface IProgressIndicatorProps {
   transferState: TransferState;
+  transferType: TransferType;
 }
 
 const getPoint1Type = (state: TransferState): PointType => {
@@ -95,6 +97,14 @@ const getPoint2Type = (state: TransferState): PointType => {
   }
 }
 
+const getPoint3Type = (state: TransferState): PointType => {
+  switch (state) {
+    case TransferState.Confirmed: return PointType.Bordered;
+    case TransferState.Completed: return PointType.Checked;
+    default: return PointType.None;
+  }
+}
+
 const ProgressIndicator = (props: IProgressIndicatorProps) => (
   <SProgressIndicator>
     <SProgressIndicatorPoints>
@@ -106,14 +116,24 @@ const ProgressIndicator = (props: IProgressIndicatorProps) => (
         <img src={CheckmarkIcon} alt="Checkmark icon" />
       </SPoint>
       <SLine type={props.transferState >= TransferState.Confirmed ? LineType.Bordered : LineType.None} />
-      <SPoint type={props.transferState === TransferState.Confirmed ? PointType.Bordered : PointType.None}>
+      <SPoint type={getPoint3Type(props.transferState)}>
         <img src={CheckmarkIcon} alt="Checkmark icon" />
       </SPoint>
     </SProgressIndicatorPoints>
     <SProgressIndicatorSteps>
-      <div>{'Approved'}</div>
-      <div>{'Confirmed'}</div>
-      <div>{'Completed'}</div>
+      {props.transferType === TransferType.Deposit ? (
+        <>
+          <div>{'Approved'}</div>
+          <div>{'Confirmed'}</div>
+          <div>{'Completed'}</div>
+        </>
+      ) : (
+        <>
+          <div>{'Initialized'}</div>
+          <div>{'Checkpoint'}</div>
+          <div>{'Completed'}</div>
+        </>
+      )}
     </SProgressIndicatorSteps>
   </SProgressIndicator>
 );
