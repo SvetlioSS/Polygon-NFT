@@ -66,7 +66,8 @@ const STransferDetails = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 60px;
+  height: 70px;
+  font-size: 14px;
 `;
 
 const SSeparator = styled.div`
@@ -445,6 +446,10 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
           <STokenDetails>
             <div>{'Transfer Amount'}</div>
             <div>{`1 ${symbol}`}</div>
+          </STokenDetails>
+          <STokenDetails>
+            <div>{'Service fee'}</div>
+            <div>{`0.001 ETH`}</div>
           </STokenDetails>
         </STransferDetails>
         <SSeparator />
