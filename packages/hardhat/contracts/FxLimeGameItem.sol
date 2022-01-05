@@ -23,11 +23,11 @@ contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return _fxManager;
     }
 
-    function setFxManager(address fxManager_) public onlyOwner {
+    function setFxManager(address fxManager_) external onlyOwner {
         _fxManager = fxManager_;
     }
 
-    function mint(address to, string memory uri) public {
+    function mint(address to, string memory uri) external {
         require(msg.sender == _fxManager, "Invalid sender");
 
         uint256 tokenId = _tokenIdCounter.current();
@@ -37,7 +37,7 @@ contract FxLimeGameItem is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         emit TokenMinted(to, uri, tokenId);
     }
 
-    function mint(address to, string memory uri, uint256 tokenId) public {
+    function mint(address to, string memory uri, uint256 tokenId) external {
         require(msg.sender == _fxManager, "Invalid sender");
 
         _safeMint(to, tokenId);

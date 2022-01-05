@@ -1,25 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './fx-portal/tunnel/FxBaseChildTunnel.sol';
 import './FxLimeGameItem.sol';
 
 /**
  * @title ChildTunnel
  */
-contract ChildTunnel is FxBaseChildTunnel {
+contract ChildTunnel is FxBaseChildTunnel, Ownable {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
-
     address private _childTokenAddress;
+    uint256 withdrawFee = 0.001 ether;
 
     constructor(address _fxChild, address childTokenAddress_) FxBaseChildTunnel(_fxChild) {
         _childTokenAddress = childTokenAddress_;
     }
 
+    function withdrawEther() external onlyOwner {
+        address payable _owner = payable(owner());
+        _owner.transfer(address(this).balance);
+    }
+
     function withdraw(
         address childToken,
         uint256 tokenId
-    ) external {
+    ) external payable {
+        require(msg.value == withdrawFee, 'Please provide the correct amount of ether');
+        
         _withdraw(childToken, tokenId);
     }
 

@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './fx-portal/tunnel/FxBaseRootTunnel.sol';
 import './FxLimeGameItem.sol';
 
 /**
  * @title __RootTunnel
  */
-contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
+contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver, Ownable {
     bytes32 public constant DEPOSIT = keccak256("DEPOSIT");
     address private _rootTokenAddress;
+    uint256 depositFee = 0.001 ether;
 
     string public mockCommand;
     address public mockRootToken;
@@ -30,6 +32,11 @@ contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
         _rootTokenAddress = rootTokenAddress_;
     }
 
+    function withdrawEther() external onlyOwner {
+        address payable _owner = payable(owner());
+        _owner.transfer(address(this).balance);
+    }
+
     function processMessageFromChildMock(bytes memory message) public { 
         _processMessageFromChild(message);
     }
@@ -39,7 +46,9 @@ contract __RootTunnel is FxBaseRootTunnel, IERC721Receiver {
         address user,
         uint256 tokenId,
         string memory uri
-    ) public {
+    ) external payable {
+        require(msg.value == depositFee, 'Please provide the correct amount of ether');
+
         FxLimeGameItem(rootToken).safeTransferFrom(
             msg.sender, // depositor
             address(this), // manager contract

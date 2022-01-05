@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { ethers } = require('hardhat');
+const { ethers, waffle } = require('hardhat');
 
 const randomAddress = '0x34E67C845168131800e6790f8B7b7c7f3acB15A9';
 
@@ -8,6 +8,7 @@ describe('Child Tunnel', function () {
   let childTunnelContract;
   let owner;
   let addr1;
+  let provider = waffle.provider;
 
   before(async () => {
     [owner, addr1] = await ethers.getSigners();
@@ -66,9 +67,33 @@ describe('Child Tunnel', function () {
     expect(await fxLimeGameItemContract.ownerOf(tokenId)).to.equal(addr1.address);
   });
 
+  it('Should have 0 ETH balance before withdraw', async function () {
+    const currentBalance = await childTunnelContract.provider.getBalance(childTunnelContract.address);
+    expect(currentBalance).to.equal(ethers.utils.parseEther('0'));
+  });
+
   it('Should successfully burn NFT after WITHDRAW', async () => {
     const tokenId = 0;
-    await childTunnelContract.connect(addr1).withdraw(fxLimeGameItemContract.address, tokenId);
+    await childTunnelContract.connect(addr1).withdraw(fxLimeGameItemContract.address, tokenId, {
+      value: ethers.utils.parseEther('0.001'),
+    });
     expect(await fxLimeGameItemContract.totalSupply()).to.equal(0);
+  });
+
+  it('Should have 0.001 ETH balance after withdrawal', async function () {
+    const newBalance = await childTunnelContract.provider.getBalance(childTunnelContract.address);
+    expect(newBalance).to.equal(ethers.utils.parseEther('0.001'));
+  });
+
+  it('Should successfully withdraw ether from contract as owner', async function () {
+    const balanceBeforeWithdraw = await provider.getBalance(owner.address);
+    await childTunnelContract.connect(owner).withdrawEther();
+    const balanceAfterWithdraw = await provider.getBalance(owner.address);
+    expect(balanceAfterWithdraw).to.be.gt(balanceBeforeWithdraw);
+  });
+
+  it('Should have 0 ETH after owner withdraws', async function () {
+    const newBalance = await childTunnelContract.provider.getBalance(childTunnelContract.address);
+    expect(newBalance).to.equal(ethers.utils.parseEther('0'));
   });
 });
