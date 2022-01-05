@@ -5,8 +5,6 @@
   "private": true,
   "scripts": {
     "hardhat:mint": "yarn workspace @polygon-nft/hardhat mint",
-    "hardhat:burn": "yarn workspace @polygon-nft/hardhat burn",
-    "hardhat:deposit": "yarn workspace @polygon-nft/hardhat deposit",
     "hardhat:debug": "yarn workspace @polygon-nft/hardhat debug",
     "hardhat:connect": "yarn workspace @polygon-nft/hardhat connect",
     "hardhat:deploy:goerli": "yarn workspace @polygon-nft/hardhat deploy:goerli",

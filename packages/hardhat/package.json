@@ -20,14 +20,12 @@
   },
   "scripts": {
     "mint": "hardhat mint",
-    "burn": "hardhat burn",
     "connect": "hardhat connect",
-    "deposit": "hardhat deposit",
     "debug": "hardhat debug",
     "deploy:mumbai": "hardhat deploy-testnets --network mumbai",
     "deploy:goerli": "hardhat deploy-testnets --network goerli",
-    "verify:mumbai": "npx hardhat verify --network mumbai",
-    "verify:goerli": "npx hardhat verify --network goerli",
-    "test": "npx hardhat test --network hardhat"
+    "verify:mumbai": "hardhat verify --network mumbai",
+    "verify:goerli": "hardhat verify --network goerli",
+    "test": "hardhat test --network hardhat"
   }
 }

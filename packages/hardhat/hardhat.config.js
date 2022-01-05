@@ -45,18 +45,6 @@ task('mint', 'Mints some NFTs on a provided network')
     await mint(taskArgs.address);
   });
 
-task('burn', 'Burns the minted tokens')
-  .setAction(async taskArgs => {
-    const burn = require('./scripts/burn');
-    await burn();
-  });
-
-task('deposit', 'Deposits a token from Goerli to Mumbai')
-  .setAction(async () => {
-    const deposit = require('./scripts/deposit');
-    await deposit();
-  });
-
 task('debug', 'Debug task that change')
   .setAction(async () => {
     const debug = require('./scripts/debug');
