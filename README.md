@@ -2,10 +2,10 @@
 public URL https://polygon-nft.web.app/
 
 Latest deployed contract addresses:
-1. (Child) Polygon Mumbai NFT - 0x856AA9cF080a489c9D0dC8570EaA3d153a2F9a0f
-2. (Child) Polygon Mumbai Tunnel - 0x544EF44C9dd252447cD259718c80b648cf454D20
-3. (Root) Ethereum Goerli NFT - 0xA1fff972D804FEe7AfdF1ADB50977D6aDd09d227
-4. (Root) Ethereum Goerli Tunnel - 0x196abE4F3a1466ed65Ce25EC537Ad8dE51b9355f
+1. (Child) Polygon Mumbai NFT - 0x62da2F5132B4e3CBE5afD3905F3D4888b975f8f9
+2. (Child) Polygon Mumbai Tunnel - 0x24d1cdf9a1e5C589A2981E07CE06e7E0E9Edce75
+3. (Root) Ethereum Goerli NFT - 0x610CE1cf222a50d9000BD05Da14f93475011C094
+4. (Root) Ethereum Goerli Tunnel - 0xc09f72Fa66CC411069220a86B1f8Db418098fab8
 
 # Starting the project
 1. Create a .env file using the .env.example and provide all required keys.
