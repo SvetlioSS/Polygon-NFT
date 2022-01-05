@@ -1,5 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import ethers from 'ethers';
+
 import Loader from './Loader';
 import Button from './Button';
 import ProgressIndicator from './ProgressIndicator';
@@ -268,7 +270,9 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
 
       const depositTransaction = debug
         ? await getMockTransaction(1)
-        : await rootTunnelContract.deposit(ROOT_TOKEN, address, tokenId, tokenURI);
+        : await rootTunnelContract.deposit(ROOT_TOKEN, address, tokenId, tokenURI, {
+            value: ethers.utils.parseEther('0.001'),
+          });
       this.updateTransaction(1, {
         hash: depositTransaction.hash,
         status: 'Pending',
@@ -295,7 +299,11 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
 
     this.setState({ transferState: TransferState.PendingApproval });
 
-    const transaction = debug ? await getMockTransaction(1) : await childTunnelContract.withdraw(CHILD_TOKEN, tokenId);
+    const transaction = debug
+      ? await getMockTransaction(1)
+      : await childTunnelContract.withdraw(CHILD_TOKEN, tokenId, {
+          value: ethers.utils.parseEther('0.001'),
+        });
 
     this.updateTransaction(0, {
       hash: transaction.hash,
@@ -425,7 +433,9 @@ class TransferFlow extends React.Component<ITransferFlowProps, ITransferFlowStat
           {(transferState === TransferState.PendingApproval || transferState === TransferState.Approved) &&
             'Transfer in Progress'}
           {type === TransferType.Deposit && transferState === TransferState.Confirmed && 'Transfer en route'}
-          {type === TransferType.Withdraw && transferState === TransferState.PendingConfirmation && 'Transfer in Progress'}
+          {type === TransferType.Withdraw &&
+            transferState === TransferState.PendingConfirmation &&
+            'Transfer in Progress'}
           {type === TransferType.Withdraw && transferState === TransferState.Confirmed && 'Claiming token'}
           {type === TransferType.Withdraw && transferState === TransferState.Completed && 'Completed'}
         </SHeader1>
