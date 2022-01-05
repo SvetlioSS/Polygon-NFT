@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import ethers from 'ethers';
+import * as ethers from "ethers";
 
 import Loader from './Loader';
 import Button from './Button';
