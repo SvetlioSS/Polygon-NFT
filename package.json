@@ -18,6 +18,7 @@
     "react-app:deploy": "yarn workspace @polygon-nft/react-app deploy",
     "react-app:test": "yarn workspace @polygon-nft/react-app test",
     "react-app:eject": "yarn workspace @polygon-nft/react-app eject",
+    "functions:deploy": "yarn workspace @polygon-nft/functions deploy",
     "prettify": "yarn prettier --write ."
   },
   "repository": "git+https://github.com/SvetlioSS/Polygon-NFT.git",

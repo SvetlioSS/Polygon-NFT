@@ -1,5 +1,5 @@
 {
-  "name": "functions",
+  "name": "@polygon-nft/functions",
   "description": "Cloud Functions for Firebase",
   "version": "1.0.0",
   "scripts": {
