@@ -10,6 +10,7 @@ const MUMBAI_RPC_URL = 'https://polygon-mumbai.g.alchemy.com/v2/W6txy-iufqn51fzp
 const MUMBAI_POLYGONSCAN_URL = 'https://mumbai.polygonscan.com/tx/';
 const GOERLI_ETHEREUMSCAN_URL = 'https://goerli.etherscan.io/tx/';
 const SEND_MESSAGE_EVENT_SIG = '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036';
+const MINT_URL = 'https://europe-west1-polygon-nft.cloudfunctions.net/mint';
 
 export {
   PROOF_API,
@@ -19,4 +20,5 @@ export {
   MUMBAI_POLYGONSCAN_URL,
   GOERLI_ETHEREUMSCAN_URL,
   SEND_MESSAGE_EVENT_SIG,
+  MINT_URL,
 };

@@ -29,7 +29,8 @@
   "homepage": "https://github.com/SvetlioSS/Polygon-NFT#readme",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "packages/firebase/*"
     ]
   },
   "devDependencies": {

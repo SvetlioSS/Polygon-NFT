@@ -1,9 +1,11 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import * as PropTypes from 'prop-types';
 import Blockie from './Blockie';
-import { ellipseAddress, getChainData } from '../helpers/utilities';
+import { ellipseAddress, getChainData, showNotification } from '../helpers/utilities';
 import { transitions } from '../styles';
+import Button from './Button';
+import { MINT_URL } from '../constants';
 
 const SHeader = styled.div`
   margin-top: -1px;
@@ -81,6 +83,27 @@ interface IHeaderProps {
 const Header = (props: IHeaderProps) => {
   const { connected, address, chainId, killSession } = props;
   const chainData = chainId ? getChainData(chainId) : null;
+
+  const [minting, setMinting] = useState(false);
+
+  const onMint = () => {
+    setMinting(true);
+    const key = window.prompt('Please provide the Security Key...');
+    const url = `${MINT_URL}?key=${key}&address=${address}`;
+    fetch(url)
+      .then(response => {
+        if (response.status === 200) {
+          showNotification('3 NFTs were successfully minted. Please reload the page to see them...');
+        } else {
+          showNotification('There was an error minting NFTs...');
+        }
+      })
+      .catch(() => {
+        showNotification('There was an error minting NFTs...');
+      })
+      .finally(() => setMinting(false));
+  };
+
   return (
     <SHeader {...props}>
       {connected && chainData ? (
@@ -90,6 +113,9 @@ const Header = (props: IHeaderProps) => {
         </SActiveChain>
       ) : (
         'Not Connected'
+      )}
+      {connected && chainData && chainData.network === 'goerli' && address && (
+        <Button onClick={onMint} disabled={minting}>{'Mint me 3 NFTs'}</Button>
       )}
       {address && (
         <SActiveAccount>
